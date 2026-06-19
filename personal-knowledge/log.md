@@ -1,6 +1,7 @@
 # Personal Knowledge — Update Log
 
 ## 2026-06-19
+* **Creation**: Documented [Code Structure and Patterns](/conventions/code-structure.md) — I/O interfaces + Fake implementations, constructor DI, <700-line classes, <30-line functions, ≤2 indentations, route handler discipline
 * **Creation**: Documented [Coding Modalities](/tools/coding-modalities.md) — VSCode, Zed, Devboxer, Telegram
 * **Creation**: Documented [CLI Tools](/tools/cli-tools.md) — Bash, tmux, vim, jq, curl, git, AI agents
 * **Creation**: Documented [Dotfiles Philosophy](/tools/dotfiles.md) — stock defaults for portability

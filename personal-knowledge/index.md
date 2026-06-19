@@ -17,6 +17,7 @@ Personal software development practices, home lab infrastructure, network topolo
 
 * [Language Preferences](/conventions/languages.md) — TypeScript, Python, Go, Java, Rust
 * [Project Structure](/conventions/project-structure.md) — Standard backend layout: services, clients, models, routes
+* [Code Structure and Patterns](/conventions/code-structure.md) — I/O interfaces, dependency injection, size limits, route discipline
 * [Naming Conventions](/conventions/naming.md) — Nouns for classes, verbs for functions
 * [Configuration Management](/conventions/configuration.md) — Config files, env vars, .env
 * [Git and Commits](/conventions/git-commits.md) — FEAT/BUG/CHORE prefixes, feature branches
