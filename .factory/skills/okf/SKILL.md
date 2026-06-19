@@ -1,6 +1,6 @@
 ---
 name: okf
-description: Create, validate, and consume Open Knowledge Format (OKF v0.1) bundles — portable knowledge represented as Markdown with YAML frontmatter. Use when building, auditing, or navigating OKF bundles.
+description: Create, validate, consume, and interview-to-build Open Knowledge Format (OKF v0.1) bundles — portable knowledge represented as Markdown with YAML frontmatter. Use when building, auditing, navigating, or interviewing to create OKF bundles.
 ---
 
 # Open Knowledge Format (OKF) Skill
@@ -14,6 +14,7 @@ Use this skill when:
 - Adding or updating `log.md` entries
 - Validating an existing bundle for conformance
 - Navigating or consuming an OKF bundle
+- **Interviewing a user** to document their personal knowledge, home lab, dev practices, network, tools, or workflows as OKF concepts
 
 ---
 
@@ -309,6 +310,137 @@ Format output clearly:
 3. Extract frontmatter for structured queries: `type`, `tags`, `resource`, `title`.
 4. Follow cross-links to understand relationships.
 5. Tolerate gaps — missing index files, broken links, unknown fields are all expected.
+
+---
+
+## Interview Flow — Documenting Personal Knowledge
+
+When a user wants to document their personal knowledge (home lab, dev practices, network, tools, etc.) as an OKF bundle, use this interview process. **Follow it exactly.**
+
+### Interview Protocol
+
+1. **Start by asking what topics** the user wants to document. Present these options:
+
+   | Topic | What it covers | Suggested directories |
+   |---|---|---|
+   | Home Lab | Servers, VMs, containers, hardware | `homelab/hardware/`, `homelab/services/` |
+   | Network | LAN, VLANs, DNS, firewall, VPN | `homelab/network/` |
+   | Services | Self-hosted apps, config, dependencies | `homelab/services/` |
+   | Conventions | Coding style, project structure, naming | `conventions/` |
+   | Deployment | CI/CD, image builds, secrets, dev loop | `deployment/`, `playbooks/` |
+   | Tools | Dotfiles, CLI tools, editor, machine setup | `tools/`, `conventions/` |
+   | Knowledge | Notes, bookmarks, references, lessons | `references/`, `conventions/` |
+
+2. **Scaffold the bundle first**: Create the bundle directory and subdirectories. Write the root `index.md` with `okf_version: "0.1"` and a `log.md`.
+
+3. **Ask ONE question at a time.** Never dump all questions at once. After each answer, **immediately create the concept document** before asking the next question.
+
+4. **Cross-link as you go.** When concept B relates to concept A you just wrote, add a link: `[text](/path/to/a.md)`.
+
+5. **After all questions in a topic, generate the index.md** for that directory.
+
+6. **Validate** the bundle when done.
+
+### Question Bank by Topic
+
+**Home Lab Infrastructure** (`type: Server`)
+
+- Q1: What physical machines or devices run in your home lab? List them with hostnames.
+- Q2: For each machine: what are the specs? (CPU, RAM, storage, network interfaces)
+- Q3: What hypervisor or OS does each machine run?
+- Q4: What VMs, containers, or services run on each machine? List with purpose and IPs.
+- Q5: How is storage organized? (NAS, local disks, NFS, ZFS pools)
+- Q6: What's your backup strategy?
+- Q7: Any machines with special roles? (firewall, router, DNS, media server)
+
+**Network Topology** (`type: Network`)
+
+- Q1: What's your primary subnet and router? What handles DHCP?
+- Q2: Do you use VLANs? What's on each?
+- Q3: How is DNS configured?
+- Q4: What firewall rules do you have? Any exposed ports?
+- Q5: VPN or Tailscale for remote access? How is it set up?
+- Q6: WAN setup: ISP, connection type, static IP or dynamic DNS?
+- Q7: Any network segmentation for IoT, guest, or lab traffic?
+
+**Services and Applications** (`type: Service`)
+
+- Q1: What self-hosted services are you running? List them all.
+- Q2: For each: where does it run? (which machine/VM/container)
+- Q3: How is each deployed? (Docker Compose, Kubernetes, binary, LXC)
+- Q4: How do you access each? (local IP, reverse proxy, VPN-only, public)
+- Q5: What dependencies exist between services?
+- Q6: How do you handle updates?
+- Q7: Where is config and persistent data stored for each?
+
+**Development Conventions** (`type: Convention`)
+
+- Q1: What languages do you primarily use? Preferred project structure for each?
+- Q2: How do you name things? (files, functions, variables, branches, commits)
+- Q3: Preferred toolchain? (editor, formatter, linter, test runner, build system)
+- Q4: How do you handle configuration?
+- Q5: Commit and PR style? Conventional commits? Squash or merge?
+- Q6: Opinions on dependencies? (pinning, lockfiles, vendoring)
+- Q7: Default libraries or frameworks?
+
+**Deployment and CI/CD** (`type: Workflow`)
+
+- Q1: Walk me through your deployment flow — code to running service.
+- Q2: Do you use CI/CD? What platform and what does it do?
+- Q3: How do you build container images?
+- Q4: Where do you store images? (Docker Hub, GHCR, local registry)
+- Q5: How do you handle secrets?
+- Q6: What's your local dev loop? (hot reload, docker compose, tilt)
+- Q7: How do you test before deploying?
+
+**Tools and Dotfiles** (`type: Tool`)
+
+- Q1: What OS and shell do you use? Customizations?
+- Q2: Essential CLI tools?
+- Q3: Dotfiles approach? Where are they?
+- Q4: Editor/IDE setup? Key plugins?
+- Q5: How do you bootstrap a new machine?
+- Q6: What AI/agent tools do you use?
+
+**Personal Knowledge Management** (`type: Reference`)
+
+- Q1: How do you currently store notes, bookmarks, or references?
+- Q2: What topics do you frequently look up?
+- Q3: Hard-won lessons or gotchas to preserve?
+- Q4: Resources you return to often?
+
+### Example Interview Cadence
+
+```
+ASSISTANT: Which topics would you like to document? I can cover home lab,
+network, services, dev conventions, deployment, tools, or personal knowledge.
+
+USER: Home lab and network.
+
+ASSISTANT: [Creates bundle directory, index.md, log.md]
+Let's start with your home lab. What physical machines run in it? Give me
+hostnames and a quick description.
+
+USER: Dell Optiplex 7080 named scarif, Pi 4 named yavin, old NUC named hoth.
+
+ASSISTANT: [Creates homelab/hardware/scarif.md with type: Server, title, and
+the user's answer in the body]
+Got it. Now: what are the specs for scarif?
+
+USER: i7-10700T, 64GB RAM, 1TB NVMe + 2TB SATA SSD.
+
+ASSISTANT: [Updates scarif.md with specs — or creates a new document if
+that makes more sense — then moves to the next question]
+...
+```
+
+### Key rules
+
+- **One question, one answer, one document.** Don't batch.
+- **Write concepts immediately.** The user should see their knowledge taking shape in real time.
+- **Be conversational.** This is an interview, not an interrogation. Let the user elaborate.
+- **Use the user's words.** Don't invent details they haven't provided.
+- **Cross-link relentlessly.** Scarif runs Pi-hole → link to the Pi-hole service doc.
 
 ---
 
