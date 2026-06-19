@@ -6,15 +6,18 @@
  * files with YAML frontmatter.
  *
  * Tools:
- *   okf_create_concept   — Create a conformant OKF concept document
- *   okf_validate_bundle  — Validate a bundle against the 3 conformance rules
- *   okf_scaffold_bundle  — Scaffold a new bundle directory structure
- *   okf_read_frontmatter — Read and return parsed frontmatter from a concept
- *   okf_generate_index   — Auto-generate index.md from concepts in a directory
+ *   okf_create_concept       — Create a conformant OKF concept document
+ *   okf_validate_bundle      — Validate a bundle against the 3 conformance rules
+ *   okf_scaffold_bundle      — Scaffold a new bundle directory structure
+ *   okf_read_frontmatter     — Read and return parsed frontmatter from a concept
+ *   okf_generate_index       — Auto-generate index.md from concepts in a directory
+ *   okf_interview_questions  — Get domain-specific questions to interview the user
+ *   okf_interview_suggest    — Suggest OKF bundle structure for a domain
  *
  * Commands:
  *   /okf-validate  — Validate current bundle (TUI)
  *   /okf-scaffold  — Scaffold a new bundle interactively
+ *   /okf-interview  — Start an interview to document personal knowledge as OKF
  */
 
 import type { ExtensionAPI, ExtensionContext, Theme } from "@earendil-works/pi-coding-agent";
@@ -321,6 +324,229 @@ function validateBundle(bundlePath: string): ValidationResult {
 
   return result;
 }
+
+// ─── Interview Question Templates ────────────────────────────────────────────
+
+interface InterviewTopic {
+  topic: string;
+  description: string;
+  suggestedType: string;
+  suggestedDirs: string[];
+  questions: InterviewQuestion[];
+}
+
+interface InterviewQuestion {
+  question: string;
+  hint?: string;
+  field?: string; // Which frontmatter field this maps to
+}
+
+const INTERVIEW_TOPICS: Record<string, InterviewTopic> = {
+  "home-lab": {
+    topic: "Home Lab Infrastructure",
+    description: "Your self-hosted servers, VMs, containers, and physical hardware.",
+    suggestedType: "Server",
+    suggestedDirs: ["homelab", "homelab/hardware", "homelab/services"],
+    questions: [
+      {
+        question: "What physical machines or devices run in your home lab? Give me a list with hostnames.",
+        hint: "e.g., 'Optiplex 7080 named scarif, Raspberry Pi 4 named yavin'",
+      },
+      {
+        question: "For each machine: what are the specs? (CPU, RAM, storage, network interfaces)",
+        field: "body",
+      },
+      {
+        question: "What hypervisor or OS does each machine run? (Proxmox, ESXi, Ubuntu Server, etc.)",
+        field: "body",
+      },
+      {
+        question: "What VMs, containers, or services run on each machine? List them with their purpose.",
+        hint: "e.g., 'Pi-hole on 192.168.1.2, Traefik on 192.168.1.3'",
+      },
+      {
+        question: "How is storage organized? (NAS, local disks, NFS shares, ZFS pools)",
+      },
+      {
+        question: "What's your backup strategy? How often, to where, what's covered?",
+      },
+      {
+        question: "Do any machines have special roles? (firewall, router, DNS, DHCP, media server)",
+      },
+    ],
+  },
+
+  "network": {
+    topic: "Network Topology",
+    description: "Your LAN, VLANs, subnets, DNS, firewall rules, and routing.",
+    suggestedType: "Network",
+    suggestedDirs: ["homelab/network"],
+    questions: [
+      {
+        question: "What's your primary subnet and router? What device handles DHCP?",
+        hint: "e.g., '192.168.1.0/24, Unifi Dream Machine at 192.168.1.1'",
+      },
+      {
+        question: "Do you use VLANs? If so, what are they and what's on each?",
+      },
+      {
+        question: "How is DNS configured? Internal DNS server, Pi-hole, public resolver?",
+      },
+      {
+        question: "What firewall rules do you have? Any exposed ports or DMZ?",
+      },
+      {
+        question: "Do you use VPN or Tailscale for remote access? How is it configured?",
+      },
+      {
+        question: "What's your WAN setup? ISP, connection type, static IP or dynamic DNS?",
+      },
+      {
+        question: "Any network segmentation for IoT, guest, or lab traffic?",
+      },
+    ],
+  },
+
+  "services": {
+    topic: "Services and Applications",
+    description: "Self-hosted services, their config, dependencies, and access patterns.",
+    suggestedType: "Service",
+    suggestedDirs: ["homelab/services"],
+    questions: [
+      {
+        question: "What self-hosted services are you running? List them all.",
+        hint: "e.g., 'Jellyfin, Home Assistant, Pi-hole, Paperless-ngx, Grafana'",
+      },
+      {
+        question: "For each service: where does it run? (which machine/VM/container)",
+      },
+      {
+        question: "How is each service deployed? (Docker Compose, Kubernetes, bare binary, LXC)",
+      },
+      {
+        question: "How do you access each service? (local IP, reverse proxy, VPN-only, public)",
+      },
+      {
+        question: "What dependencies exist between services? (e.g., 'Jellyfin depends on the NAS for media storage')",
+      },
+      {
+        question: "How do you handle updates? (Watchtower, manual pull, Renovate, apt)",
+      },
+      {
+        question: "Where is config and persistent data stored for each service?",
+      },
+    ],
+  },
+
+  "conventions": {
+    topic: "Development Conventions",
+    description: "Your personal coding style, project structure, naming, and tooling preferences.",
+    suggestedType: "Convention",
+    suggestedDirs: ["conventions"],
+    questions: [
+      {
+        question: "What languages do you primarily write in? For each: what's your preferred project structure?",
+      },
+      {
+        question: "How do you name things? (files, functions, variables, branches, commits)",
+      },
+      {
+        question: "What's your preferred toolchain? (editor, formatter, linter, test runner, build system)",
+      },
+      {
+        question: "How do you handle configuration? (env files, config files, CLI flags, 12-factor)",
+      },
+      {
+        question: "What's your commit and PR style? Conventional commits? Squash or merge?",
+      },
+      {
+        question: "Do you have strong opinions about dependencies? (pinning, lockfiles, vendoring)",
+      },
+      {
+        question: "What patterns or libraries do you reach for by default? (ORM, web framework, CLI framework)",
+      },
+    ],
+  },
+
+  "deployment": {
+    topic: "Deployment and CI/CD",
+    description: "How you build, test, ship, and run your personal and home lab projects.",
+    suggestedType: "Workflow",
+    suggestedDirs: ["deployment", "playbooks"],
+    questions: [
+      {
+        question: "How do you go from code to running service? Walk me through your deployment flow.",
+        hint: "e.g., 'git push → GitHub Actions builds Docker image → Watchtower pulls on homelab'",
+      },
+      {
+        question: "Do you use CI/CD? If so, what platform and what does it do?",
+      },
+      {
+        question: "How do you build container images? (Dockerfile, Buildpacks, Nix)",
+      },
+      {
+        question: "Where do you store images? (Docker Hub, GHCR, local registry)",
+      },
+      {
+        question: "How do you handle secrets? (.env files, Vault, SOPS, GitHub Secrets)",
+      },
+      {
+        question: "What's your local dev loop? (hot reload, docker compose up, tilt, etc.)",
+      },
+      {
+        question: "How do you test before deploying? (local, staging environment, canary)",
+      },
+    ],
+  },
+
+  "tools": {
+    topic: "Tools and Dotfiles",
+    description: "Your shell setup, dotfiles, CLI tools, and workstation configuration.",
+    suggestedType: "Tool",
+    suggestedDirs: ["tools", "conventions"],
+    questions: [
+      {
+        question: "What OS and shell do you use? Any customizations worth documenting?",
+      },
+      {
+        question: "What CLI tools are essential to your workflow? (terminal, multiplexer, git UI, etc.)",
+      },
+      {
+        question: "Do you maintain dotfiles? Where are they? What's your approach to managing them?",
+      },
+      {
+        question: "What's your editor/IDE setup? Key plugins and configuration?",
+      },
+      {
+        question: "How do you bootstrap a new machine? Is there a script or checklist?",
+      },
+      {
+        question: "What AI/agent tools do you use in your workflow?",
+      },
+    ],
+  },
+
+  "knowledge": {
+    topic: "Personal Knowledge Management",
+    description: "How you organize notes, bookmarks, references, and learning.",
+    suggestedType: "Reference",
+    suggestedDirs: ["references", "conventions"],
+    questions: [
+      {
+        question: "How do you currently store notes, bookmarks, or reference material?",
+      },
+      {
+        question: "What topics or domains do you frequently look up or reference?",
+      },
+      {
+        question: "Are there any hard-won lessons or gotchas you want to preserve?",
+      },
+      {
+        question: "What resources (blogs, docs, repos, books) do you return to often?",
+      },
+    ],
+  },
+};
 
 // ─── Extension ───────────────────────────────────────────────────────────────
 
@@ -990,6 +1216,183 @@ Concept ID: ${conceptId}
     },
   });
 
+  // ── Tool: okf_interview_questions ─────────────────────────────────────────
+
+  pi.registerTool({
+    name: "okf_interview_questions",
+    label: "OKF Interview Questions",
+    description:
+      "Get domain-specific interview questions to ask the user about their knowledge, infrastructure, conventions, or workflows. The LLM should use these questions to conduct a natural conversation, then create OKF concept documents with the answers. Call this tool when the user wants to document their personal knowledge, home lab, dev setup, or workflows.",
+    promptSnippet: "Get interview questions for documenting personal knowledge as OKF",
+    promptGuidelines: [
+      "Use okf_interview_questions when the user asks to document their personal setup, home lab, development conventions, deployment workflows, tools, or knowledge. It returns structured questions to guide the interview.",
+      "After receiving questions, ask the user ONE question at a time in a natural conversational style. Do NOT dump all questions at once.",
+      "After each answer, use okf_create_concept to write the answer as an OKF document BEFORE asking the next question.",
+      "When all questions for a topic are answered, use okf_generate_index to create the index.md.",
+    ],
+    parameters: Type.Object({
+      topic: StringEnum(
+        ["home-lab", "network", "services", "conventions", "deployment", "tools", "knowledge"] as const,
+        {
+          description:
+            "Topic to interview about: home-lab (servers/hardware), network (LAN/VLANs/DNS), services (self-hosted apps), conventions (coding style), deployment (CI/CD workflow), tools (dotfiles/CLI/editor), knowledge (notes/references)",
+        },
+      ),
+      bundleDir: Type.Optional(
+        Type.String({
+          description:
+            "OKF bundle directory where docs should be created (e.g., 'personal-knowledge'). Used to suggest file paths.",
+        }),
+      ),
+    }),
+
+    async execute(_toolCallId, params, _signal, _onUpdate) {
+      const topic = INTERVIEW_TOPICS[params.topic];
+      if (!topic) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Unknown topic: ${params.topic}. Valid topics: ${Object.keys(INTERVIEW_TOPICS).join(", ")}`,
+            },
+          ],
+        };
+      }
+
+      const bundleDir = params.bundleDir || "personal-knowledge";
+      const lines: string[] = [];
+
+      lines.push(`## Interview: ${topic.topic}`);
+      lines.push("");
+      lines.push(`**Domain:** ${topic.description}`);
+      lines.push(`**Suggested type:** \`${topic.suggestedType}\``);
+      lines.push(
+        `**Suggested directories:** ${topic.suggestedDirs.map((d) => `\`${bundleDir}/${d}/\``).join(", ")}`,
+      );
+      lines.push("");
+      lines.push(
+        "**INSTRUCTIONS:** Ask the user ONE question at a time in a natural conversational style. After each answer, use **okf_create_concept** to create the OKF document before asking the next question. Use absolute cross-links between concepts (e.g., `/homelab/hardware/scarif.md`).",
+      );
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+
+      for (let i = 0; i < topic.questions.length; i++) {
+        const q = topic.questions[i];
+        lines.push(`### Q${i + 1}. ${q.question}`);
+        if (q.hint) lines.push(`   *Hint: ${q.hint}*`);
+        if (q.field) lines.push(`   (maps to: ${q.field})`);
+        lines.push("");
+      }
+
+      lines.push("---");
+      lines.push("");
+      lines.push(
+        "**After all questions are answered:** Use **okf_generate_index** on each directory and **okf_validate_bundle** on the bundle root.",
+      );
+
+      return {
+        content: [{ type: "text", text: lines.join("\n") }],
+        details: {
+          topic: params.topic,
+          questionCount: topic.questions.length,
+          suggestedDirs: topic.suggestedDirs.map((d) => `${bundleDir}/${d}`),
+        },
+      };
+    },
+
+    renderCall(args, theme, _context) {
+      const topic = INTERVIEW_TOPICS[args.topic];
+      return new Text(
+        theme.fg("toolTitle", theme.bold("okf interview ")) +
+          theme.fg("accent", topic?.topic || args.topic),
+        0,
+        0,
+      );
+    },
+
+    renderResult(result, _options, theme, _context) {
+      const d = result.details as { topic: string; questionCount: number } | undefined;
+      if (!d) return new Text(theme.fg("dim", "Done"), 0, 0);
+      return new Text(
+        theme.fg("success", "✓ ") +
+          theme.fg("muted", `${d.questionCount} questions for ${d.topic}`),
+        0,
+        0,
+      );
+    },
+  });
+
+  // ── Tool: okf_interview_suggest ───────────────────────────────────────────
+
+  pi.registerTool({
+    name: "okf_interview_suggest",
+    label: "OKF Interview Suggest",
+    description:
+      "Suggest which interview topics are available and recommend a logical order for documenting personal knowledge. Call this when the user says they want to document their knowledge but hasn't specified what topics.",
+    promptSnippet: "Suggest interview topics to cover for personal knowledge documentation",
+    promptGuidelines: [
+      "Use okf_interview_suggest at the START of an interview session to present the user with available topics and recommend an order.",
+      "After the user selects topics, call okf_interview_questions for each topic the user wants to cover.",
+    ],
+    parameters: Type.Object({}),
+
+    async execute(_toolCallId, _params, _signal, _onUpdate) {
+      const lines: string[] = [];
+
+      lines.push("## Available Interview Topics");
+      lines.push("");
+      lines.push(
+        "Here are the topics I can interview you about. I recommend this order for a complete personal knowledge bundle:",
+      );
+      lines.push("");
+
+      const topics = Object.entries(INTERVIEW_TOPICS);
+      for (let i = 0; i < topics.length; i++) {
+        const [key, topic] = topics[i];
+        lines.push(
+          `${i + 1}. **${topic.topic}** (\`${key}\`) — ${topic.description}`,
+        );
+        lines.push(`   ${topic.suggestedDirs.length} director${topic.suggestedDirs.length === 1 ? "y" : "ies"}: ${topic.suggestedDirs.join(", ")}`);
+        lines.push("");
+      }
+
+      lines.push("---");
+      lines.push("");
+      lines.push(
+        "**Next step:** Ask the user which topics they want to cover (or suggest starting with #1 and working through sequentially). For each chosen topic, call **okf_interview_questions** to get the detailed questions.",
+      );
+
+      return {
+        content: [{ type: "text", text: lines.join("\n") }],
+        details: {
+          topics: Object.keys(INTERVIEW_TOPICS),
+          availableCount: topics.length,
+        },
+      };
+    },
+
+    renderCall(_args, theme, _context) {
+      return new Text(
+        theme.fg("toolTitle", theme.bold("okf interview ")) +
+          theme.fg("muted", "suggest topics"),
+        0,
+        0,
+      );
+    },
+
+    renderResult(result, _options, theme, _context) {
+      const d = result.details as { availableCount: number } | undefined;
+      if (!d) return new Text(theme.fg("dim", "Done"), 0, 0);
+      return new Text(
+        theme.fg("success", "✓ ") +
+          theme.fg("muted", `${d.availableCount} topics available`),
+        0,
+        0,
+      );
+    },
+  });
+
   // ── Command: /okf-validate ────────────────────────────────────────────────
 
   pi.registerCommand("okf-validate", {
@@ -1052,6 +1455,32 @@ Use **okf_create_concept** to add concept documents.
       fs.writeFileSync(path.join(cwd, "log.md"), logContent, "utf-8");
 
       ctx.ui.notify(`OKF bundle scaffolded: index.md + log.md`, "success");
+    },
+  });
+
+  // ── Command: /okf-interview ──────────────────────────────────────────────
+
+  pi.registerCommand("okf-interview", {
+    description: "Interview me about my knowledge and create OKF docs",
+    handler: async (_args, ctx) => {
+      // Build a prompt that instructs the LLM to conduct the interview
+      const kickoff = [
+        "I want to document my personal knowledge, infrastructure, or development practices as an Open Knowledge Format (OKF) bundle.",
+        "",
+        "Please follow this process:",
+        "1. First, call **okf_interview_suggest** to show me available topics.",
+        "2. Ask me which topics I want to cover.",
+        "3. For each topic, scaffold the bundle (if not done) with **okf_scaffold_bundle** at `./personal-knowledge/`.",
+        "4. Call **okf_interview_questions** for the selected topic.",
+        "5. Ask me ONE question at a time. After each answer, use **okf_create_concept** to write the answer as an OKF document immediately.",
+        "6. After all questions in a topic are answered, use **okf_generate_index** on that directory.",
+        "7. When all topics are done, call **okf_validate_bundle** on `./personal-knowledge/`.",
+        "",
+        "Be conversational, not robotic. Let me elaborate naturally. Cross-link related concepts.",
+      ].join("\n");
+
+      // Send as a user message to kick off the agent
+      pi.sendUserMessage(kickoff);
     },
   });
 }

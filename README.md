@@ -85,17 +85,17 @@ Restart `droid`. Creates the `/okf` command automatically. Droid invokes the ski
 ```bash
 # From your project root:
 mkdir -p .pi/extensions
-cp tools/okf.ts .pi/extensions/
+cp okf.ts .pi/extensions/
 ```
 
 Or for global availability (all projects):
 
 ```bash
 mkdir -p ~/.pi/agent/extensions/okf/
-cp tools/okf.ts ~/.pi/agent/extensions/okf/index.ts
+cp okf.ts ~/.pi/agent/extensions/okf/index.ts
 ```
 
-Restart pi. Registers **4 custom tools** the LLM can call plus **2 slash commands**:
+Restart pi. Registers **7 custom tools** the LLM can call plus **3 slash commands**:
 
 | Tool / Command | Description |
 |---|---|
@@ -130,6 +130,11 @@ Then use okf_create_concept to add a BigQuery Table called "user_events"
 with columns: event_id (STRING), user_id (STRING), event_type (STRING),
 created_at (TIMESTAMP).
 Finally run okf_validate_bundle on ./knowledge.
+```
+
+Or try the interview:
+```
+/okf-interview
 ```
 
 ---
