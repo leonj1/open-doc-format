@@ -2,6 +2,8 @@
 
 ## 2026-06-19
 * **Creation**: Documented [USAGE.md](/USAGE.md) — copy-paste snippets for AGENTS.md, CLAUDE.md, Pi, and Droid using gh CLI and local clone paths (private repo compatible). Includes full inline key rules so agents don't need to fetch.
+* **Update**: [Dependencies and Libraries](/conventions/dependencies.md) — changed from "avoid latest" to "always use latest versions" of every dependency; lockfiles pin the latest, not stale versions
+* **Update**: [Code Structure and Patterns](/conventions/code-structure.md) — added code coverage requirement: above 80% enforced in CI or manually before merge; untestable code covered through Fake implementations
 * **Update**: Expanded [Code Structure and Patterns](/conventions/code-structure.md) — added Testing Philosophy: tests must assert functional user outcomes (BDD), not technical implementation details. Asserting fields is banned; asserting user-visible behavior is required. Implementation detail tests freeze the codebase and are not allowed.
 * **Creation**: Documented [Coding Modalities](/tools/coding-modalities.md) — VSCode, Zed, Devboxer, Telegram
 * **Creation**: Documented [CLI Tools](/tools/cli-tools.md) — Bash, tmux, vim, jq, curl, git, AI agents

@@ -1,8 +1,8 @@
 ---
 type: Convention
 title: Dependencies and Default Libraries
-description: Pinned versions, vendoring rules, and my go-to libraries for Go — mux and zerolog. For other languages, I follow industry standards.
-tags: [conventions, dependencies, libraries, go, frameworks]
+description: Always use latest library versions with pinned lockfiles. Vendoring for Go. Go defaults: mux and zerolog. For other languages, follow industry standards.
+tags: [conventions, dependencies, libraries, go, frameworks, latest]
 timestamp: 2026-06-19T00:00:00Z
 ---
 
@@ -10,9 +10,11 @@ timestamp: 2026-06-19T00:00:00Z
 
 | Rule | Applies to |
 |------|------------|
-| **Pin versions** | All languages — lockfiles are non-negotiable. Reproducibility matters. |
+| **Always use latest versions** | All languages — start every project on the newest stable release of every dependency. Don't inherit stale versions from old projects. |
+| **Pin with lockfiles** | All languages — lockfiles are non-negotiable. Reproducibility matters, but reproducibility of *the latest* versions, not frozen-to-the-past versions. |
 | **Vendor dependencies** | Go only — the `vendor/` directory and `-mod=vendor` flag are the Go way to ship self-contained builds. |
-| **Avoid latest** | Whenever possible. I don't chase the newest release unless there's a specific reason. Stability over novelty. |
+
+Using latest means: when starting a new project or adding a new dependency, reach for the newest stable version. Don't default to an old version because "that's what we used before." Upgrade existing dependencies regularly.
 
 # Go-Specific Libraries
 

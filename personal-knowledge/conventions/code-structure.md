@@ -317,6 +317,25 @@ Tests that assert on:
 
 ...are not allowed. They freeze the implementation in place and make refactoring painful. The only valid assertion is on the **user-visible outcome** of the feature.
 
+## Code Coverage Above 80%
+
+Every project must maintain **code coverage above 80%** . Coverage is measured across the entire codebase, not per-file. The 80% threshold is a floor, not a target — higher is better.
+
+```bash
+# TypeScript/Vitest
+npx vitest --coverage
+
+# Python/pytest
+pytest --cov=src --cov-report=term --cov-fail-under=80
+
+# Go
+go test -cover ./...
+```
+
+Coverage gates are enforced in CI where CI exists, and checked manually before merging where it doesn't. A PR that drops coverage below 80% must either add tests or explicitly justify why the uncovered code cannot be meaningfully tested.
+
+Untestable code (system calls, hardware interfaces, platform-specific paths) is still covered indirectly through the Fake implementations in integration tests. The Fake exists precisely to make I/O-bound code testable without real external dependencies.
+
 # Related
 
 - [Project Structure](/conventions/project-structure.md) — where things live on disk
