@@ -2,7 +2,7 @@
 
 ## 2026-06-19
 * **Creation**: Documented [USAGE.md](/USAGE.md) — copy-paste snippets for AGENTS.md, CLAUDE.md, Pi, and Droid using gh CLI and local clone paths (private repo compatible). Includes full inline key rules so agents don't need to fetch.
-* **Creation**: Documented [Code Structure and Patterns](/conventions/code-structure.md) — I/O interfaces + Fake implementations, constructor DI, <700-line classes, <30-line functions, ≤2 indentations, route handler discipline
+* **Update**: Expanded [Code Structure and Patterns](/conventions/code-structure.md) — added type discipline (strongly typed arguments, typed objects over primitives), immutability (return values, never mutate arguments), no static classes/properties, Result types over exceptions (no exceptions for control flow)
 * **Creation**: Documented [Coding Modalities](/tools/coding-modalities.md) — VSCode, Zed, Devboxer, Telegram
 * **Creation**: Documented [CLI Tools](/tools/cli-tools.md) — Bash, tmux, vim, jq, curl, git, AI agents
 * **Creation**: Documented [Dotfiles Philosophy](/tools/dotfiles.md) — stock defaults for portability

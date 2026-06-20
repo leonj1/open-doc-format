@@ -94,8 +94,25 @@ through constructors, never imported or instantiated directly.
 ### Route Handler Discipline
 Route handlers in src/routes/ call services in src/services/ ONLY.
 Handlers never make I/O calls directly.
+
+### Type Discipline
+- All function arguments must be strongly typed — no `any`, no untyped params.
+- Prefer typed objects over primitives — `EmailAddress` not `string`, `CustomerId` not `number`.
+- Functions return values — never mutate incoming arguments. Return new state.
+
+### No Static Classes or Properties
+- Every dependency is an instance passed through a constructor. No static methods.
+- The only exception: a `main` entry point if the language requires it.
+
+### Error Handling: Result Types, Not Exceptions
+- Do not throw exceptions for expected outcomes (e.g., "user not found").
+- Return a Result type (`{ ok: true, value } | { ok: false, error }`) if the language supports it.
+- Go: return `(value, error)`. TypeScript: use discriminated unions. Python: return union types.
+- Exceptions are for truly unrecoverable situations only. Never use try/catch as control flow.
+
 ```
 Request → Route Handler → Service → Client (I/O interface) → External World
+```
 
 ### Project Layout
 ```
@@ -158,7 +175,7 @@ Fetch any doc on demand:
 
 ## Code Structure (read first)
 ~/src/open-doc-format/personal-knowledge/conventions/code-structure.md
-Key: I/O interfaces + Fake impls, constructor DI, <700-line classes, <30-line functions, ≤2 indentations
+Key: I/O interfaces + Fake impls, constructor DI, typed arguments, typed objects over primitives, return values not mutations, no static, Result types not exceptions, <700-line classes, <30-line functions, ≤2 indentations
 
 ## Project Structure
 ~/src/open-doc-format/personal-knowledge/conventions/project-structure.md
@@ -245,6 +262,10 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 
 - Every I/O class gets an interface + production impl + Fake impl for tests
 - Constructor-based dependency injection — no DI framework
+- All function arguments strongly typed — prefer typed objects over primitives
+- Functions return values — never mutate incoming arguments
+- No static classes or properties — everything is an instance
+- Result types over exceptions — never use exceptions for control flow
 - Classes <700 lines, functions <30 lines, max 2 indentations
 - Route handlers never make I/O calls — delegate to services only
 - Commit messages: FEAT/BUG/CHORE prefix, feature branches, main/master default

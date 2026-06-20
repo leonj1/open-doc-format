@@ -1,8 +1,8 @@
 ---
 type: Convention
 title: Code Structure and Patterns
-description: How I structure code inside the project directories — I/O interfaces, dependency injection, size limits, and the strict separation between routes, services, and I/O.
-tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing]
+description: How I structure code inside the project directories — I/O interfaces, dependency injection, type discipline, immutability, Result types over exceptions, size limits, and the strict separation between routes, services, and I/O.
+tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type]
 timestamp: 2026-06-19T00:00:00Z
 ---
 
@@ -97,6 +97,122 @@ Returns through the chain back to the handler
   ▼
 Response to caller
 ```
+
+# Type Discipline
+
+## Arguments Must Be Strongly Typed
+
+Every function argument must have an explicit type. No `any`, no untyped parameters:
+
+| Good | Bad |
+|------|-----|
+| `function placeOrder(customerId: CustomerId, items: OrderItem[]): Order` | `function placeOrder(customerId, items)` |
+| `def handle(event: OrderPlaced) -> None:` | `def handle(event):` |
+| `func Save(ctx context.Context, user User) error` | `func Save(ctx, user) error` |
+
+## Prefer Typed Objects Over Primitives
+
+Avoid bare strings, numbers, or booleans as arguments. Wrap them in typed objects with semantic meaning:
+
+| Good | Bad |
+|------|-----|
+| `function sendEmail(recipient: EmailAddress, subject: EmailSubject)` | `function sendEmail(recipient: string, subject: string)` |
+| `function charge(customer: CustomerId, amount: UsdAmount)` | `function charge(customer: string, amount: number)` |
+| `func Connect(addr net.IP, port Port) error` | `func Connect(addr string, port int) error` |
+
+A `string` doesn't tell you what it is. An `EmailAddress` does. Use branded types, newtypes, or value objects to wrap primitives.
+
+## Functions Return Values — Never Mutate Arguments
+
+Functions must return a strongly typed object. Never mutate the incoming argument:
+
+```typescript
+// Good — returns new state
+function addItem(order: Order, item: OrderItem): Order {
+  return { ...order, items: [...order.items, item] };
+}
+
+// Bad — mutates the argument
+function addItem(order: Order, item: OrderItem): void {
+  order.items.push(item);  // mutated incoming object
+}
+```
+
+Immutability means: callers always receive the result as a return value. No side effects on parameters. Functions that appear to "update" something should return the new state.
+
+# No Static Classes or Properties
+
+Static members couple callers to a global, making testing and refactoring hard. Every dependency must be an instance passed through a constructor:
+
+| Good | Bad |
+|------|-----|
+| `new OrderService(new StripeClient(config))` | `StripeClient.charge(amount)` |
+| Instance method on an injected dependency | Static method on a class |
+| Instance property on an injected dependency | `Config.STATIC_FIELD` |
+
+If the language absolutely requires a static entry point (e.g., a `main` function), that's the only exception. Everything else is an instance.
+
+# Error Handling: Result Types, Not Exceptions
+
+## Avoid Throwing Exceptions
+
+Exceptions should not be thrown as part of normal operation. They exist for truly unrecoverable situations (out of memory, stack overflow), not for business logic:
+
+```typescript
+// Bad — exception as control flow
+function findUser(id: string): User {
+  const user = db.query("SELECT * FROM users WHERE id = ?", id);
+  if (!user) throw new NotFoundError("User not found");
+  return user;
+}
+```
+
+## Return a Result Type
+
+If the language supports tagged unions, `Result`, `Either`, or similar, use them:
+
+```typescript
+// Good — Result type in TypeScript
+type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+
+function findUser(id: string): Result<User, NotFoundError> {
+  const user = db.query("SELECT * FROM users WHERE id = ?", id);
+  if (!user) return { ok: false, error: new NotFoundError("User not found") };
+  return { ok: true, value: user };
+}
+```
+
+```go
+// Good — Go's built-in error return
+func FindUser(id string) (User, error) {
+    user, err := db.Query(...)
+    if err != nil {
+        return User{}, fmt.Errorf("user not found: %w", err)
+    }
+    return user, nil
+}
+```
+
+```python
+# Good — Union type in Python 3.10+
+def find_user(id: str) -> User | NotFoundError:
+    user = db.query("SELECT * FROM users WHERE id = ?", id)
+    if not user:
+        return NotFoundError("User not found")
+    return user
+```
+
+## Exceptions Not for Control Flow
+
+Exceptions must not be used as a control flow mechanism:
+
+| Good | Bad |
+|------|-----|
+| `result = find_user(id); if isinstance(result, NotFoundError): ...` | `try: user = find_user(id) except NotFoundError: ...` |
+| `if err != nil { return err }` | `panic(err)` / `recover()` for expected conditions |
+| Return a Result/Either | `throw` / `raise` for business rule violations |
+
+The caller should always check the return value, not wrap calls in try/catch for expected outcomes. An uncaught exception means something broke that shouldn't have — not "the user wasn't found."
 
 # Related
 
