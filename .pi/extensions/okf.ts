@@ -775,7 +775,7 @@ Next steps:
       const body = params.body || "";
 
       // Build the complete document
-      const content = `---\n${fmLines}---\n\n${body.trim()}\n`;
+      const content = `---\n${fmLines}\n---\n\n${body.trim()}\n`;
 
       // Write the file
       fs.writeFileSync(filePath, content, "utf-8");
@@ -1055,13 +1055,10 @@ Concept ID: ${conceptId}
         };
       }
 
-      // Auto-detect if this is a bundle root
+      // Auto-detect if this is a bundle root (has its own log.md)
       const isRoot =
         params.isBundleRoot ??
-        (fs.existsSync(path.join(dir, "index.md")) &&
-          !path.resolve(dir).includes(path.sep + "tables") &&
-          !path.resolve(dir).includes(path.sep + "datasets") &&
-          !path.resolve(dir).includes(path.sep + "playbooks"));
+        fs.existsSync(path.join(dir, "log.md"));
 
       // Discover concepts in this directory (non-recursive)
       const entries = fs.readdirSync(dir, { withFileTypes: true });
