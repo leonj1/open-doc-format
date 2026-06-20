@@ -6,6 +6,8 @@ okf_version: "0.1"
 
 Personal software development practices, home lab infrastructure, network topology, and deployment workflows — documented in the Open Knowledge Format (OKF) v0.1.
 
+> **How to use this:** See [USAGE.md](/USAGE.md) for copy-paste snippets to wire these conventions into Claude Code, Pi, Droid, and any other AI coding agent via GitHub URLs.
+
 ## Tools & Modalities
 
 * [Coding Modalities](/tools/coding-modalities.md) — VSCode, Zed, Devboxer, and Telegram
