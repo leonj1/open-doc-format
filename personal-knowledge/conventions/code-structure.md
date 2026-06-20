@@ -1,8 +1,8 @@
 ---
 type: Convention
 title: Code Structure and Patterns
-description: How I structure code inside the project directories — I/O interfaces, dependency injection, type discipline, immutability, Result types over exceptions, size limits, and the strict separation between routes, services, and I/O.
-tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type]
+description: How I structure code inside the project directories — I/O interfaces + Fakes (no mocks), dependency injection, type discipline, immutability, Result types over exceptions, functional BDD testing over technical tests, size limits, and the strict separation between routes, services, and I/O.
+tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing]
 timestamp: 2026-06-19T00:00:00Z
 ---
 
@@ -235,6 +235,87 @@ Exceptions must not be used as a control flow mechanism:
 | Return a Result/Either | `throw` / `raise` for business rule violations |
 
 The caller should always check the return value, not wrap calls in try/catch for expected outcomes. An uncaught exception means something broke that shouldn't have — not "the user wasn't found."
+
+# Testing Philosophy
+
+## Functional, Not Technical
+
+Tests must assert **product functional features** — what the user can do — not technical implementation details. A test should verify an outcome the user cares about, not the internal wiring that produced it.
+
+### Valid Test (Functional)
+
+A test for an email client should verify the user can **send an email** and receive a success response:
+
+```typescript
+// ✅ Tests the feature the user cares about
+it("allows the user to send an email with recipient, subject, body, and optional CC and BCC", async () => {
+  const client = new EmailClient(new FakeEmailService());
+
+  const result = await client.send({
+    recipient: "user@example.com",
+    subject: "Meeting tomorrow",
+    body: "Let's sync at 2pm.",
+    cc: ["manager@example.com"],
+    bcc: ["archive@example.com"],
+  });
+
+  expect(result.ok).toBe(true);
+  // The user achieved their goal: the email was sent successfully.
+});
+```
+
+This test asserts the **intent** — the user wanted to send an email, and it worked. The test passes or fails based on whether the feature functions for the user, not based on internal implementation details.
+
+### Invalid Test (Technical)
+
+A test that asserts individual fields were included in the request is testing **implementation**, not behavior:
+
+```typescript
+// ❌ Tests internal structure, not user outcome
+it("includes recipient, subject, and body in the email", async () => {
+  const client = new EmailClient(new FakeEmailService());
+
+  await client.send({
+    recipient: "user@example.com",
+    subject: "Meeting tomorrow",
+    body: "Let's sync at 2pm.",
+  });
+
+  // These assertions test how the email was constructed internally.
+  // The user doesn't care that fields were "included."
+  // The user cares that the email was sent successfully.
+  expect(client.lastRequest.recipient).toBe("user@example.com");
+  expect(client.lastRequest.subject).toBe("Meeting tomorrow");
+  expect(client.lastRequest.body).toBe("Let's sync at 2pm.");
+});
+```
+
+Asserting that `recipient`, `subject`, and `body` are present tests internal structure. It doesn't test whether the user can send an email. If the implementation changes to use a different internal representation, this test breaks even though the feature still works — the test is coupled to the implementation, not the behavior.
+
+## The BDD Litmus Test
+
+Every test should answer: **"What can the user do?"** — not **"What does the code look like inside?"**
+
+| Test should assert | Test should NOT assert |
+|--------------------|------------------------|
+| The user received a confirmation | A specific field was populated |
+| The order was placed successfully | The order object has 7 properties |
+| The user sees their data on the page | The view model contains specific keys |
+| The system rejected invalid input with a clear message | The validator called `checkFoo()` before `checkBar()` |
+| The user can log in with valid credentials | The auth token is 256 bytes |
+
+If you change the internal implementation and the test still passes because the **user-facing behavior is unchanged**, that's a good test. If you refactor internals and the test breaks even though the feature works, the test is testing the wrong thing.
+
+## Implementation Detail Tests Are Banned
+
+Tests that assert on:
+- The order of internal method calls
+- The presence of specific fields in intermediate objects
+- The exact structure of a database query
+- The number of times a collaborator was called
+- Private method behavior
+
+...are not allowed. They freeze the implementation in place and make refactoring painful. The only valid assertion is on the **user-visible outcome** of the feature.
 
 # Related
 
