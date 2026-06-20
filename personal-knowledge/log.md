@@ -1,7 +1,7 @@
 # Personal Knowledge — Update Log
 
 ## 2026-06-19
-* **Creation**: Documented [USAGE.md](/USAGE.md) — copy-paste snippets for CLAUDE.md, AGENTS.md, Pi settings, and Droid skills referencing the bundle via GitHub raw URLs
+* **Creation**: Documented [USAGE.md](/USAGE.md) — copy-paste snippets for AGENTS.md, CLAUDE.md, Pi, and Droid using gh CLI and local clone paths (private repo compatible). Includes full inline key rules so agents don't need to fetch.
 * **Creation**: Documented [Code Structure and Patterns](/conventions/code-structure.md) — I/O interfaces + Fake implementations, constructor DI, <700-line classes, <30-line functions, ≤2 indentations, route handler discipline
 * **Creation**: Documented [Coding Modalities](/tools/coding-modalities.md) — VSCode, Zed, Devboxer, Telegram
 * **Creation**: Documented [CLI Tools](/tools/cli-tools.md) — Bash, tmux, vim, jq, curl, git, AI agents
