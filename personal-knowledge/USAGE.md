@@ -152,6 +152,12 @@ Rare direct commits to main for quick fixes.
 - Makefile in every project: make build, make test, make start, make stop, make restart
 - Omit Dockerfile only when host filesystem access is required
 
+### Elegant Objects Principles
+Follow the OOP recommendations from Yegor Bugayenko's *Elegant Objects*:
+no -er class names, immutable objects, no static methods/utility classes,
+no getters/setters, no NULL args or returns, always use interfaces, and
+fakes over mocks. Full list: ~/src/open-doc-format/personal-knowledge/references/elegant-objects.md
+
 ### Full Bundle
 Read more at ~/src/open-doc-format/personal-knowledge/index.md after cloning.
 ```
@@ -193,6 +199,10 @@ Key: FEAT/BUG/CHORE prefixes, feature branches, main/master default
 ~/src/open-doc-format/personal-knowledge/deployment/
 Key: Vercel for static, Railway for backends, Dockerfiles, docker-compose, Makefile
 
+## Elegant Objects Principles
+~/src/open-doc-format/personal-knowledge/references/elegant-objects.md
+Key: no -er class names, immutable objects, no static/utility classes, no getters/setters, no NULL args or returns, always use interfaces, fakes over mocks
+
 ---
 
 Before writing code:
@@ -221,7 +231,8 @@ After cloning to `~/src/open-doc-format/`:
     "~/src/open-doc-format/personal-knowledge/conventions/code-structure.md",
     "~/src/open-doc-format/personal-knowledge/conventions/project-structure.md",
     "~/src/open-doc-format/personal-knowledge/conventions/naming.md",
-    "~/src/open-doc-format/personal-knowledge/conventions/git-commits.md"
+    "~/src/open-doc-format/personal-knowledge/conventions/git-commits.md",
+    "~/src/open-doc-format/personal-knowledge/references/elegant-objects.md"
   ]
 }
 ```
@@ -273,6 +284,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 - TypeScript for AI/LLM backends, Python for extensibility, Go for static binaries
 - Dockerfiles by default, docker-compose for multi-container
 - make build, make test, make start, make stop, make restart
+- Elegant Objects principles: no -er class names, immutable objects, no static/utility classes, no getters/setters, no NULL args or returns, always use interfaces, fakes over mocks (full list: references/elegant-objects.md)
 
 ## Fetch Full Docs
 
@@ -314,6 +326,7 @@ These paths work with `gh api repos/leonj1/open-doc-format/contents/<path>`:
 | Storage | `personal-knowledge/homelab/storage.md` |
 | Services | `personal-knowledge/homelab/services/overview.md` |
 | Network Topology | `personal-knowledge/homelab/network/topology.md` |
+| Elegant Objects (book ref) | `personal-knowledge/references/elegant-objects.md` |
 
 Fetch any of these with:
 ```bash

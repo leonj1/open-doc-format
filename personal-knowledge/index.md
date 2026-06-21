@@ -34,6 +34,10 @@ Personal software development practices, home lab infrastructure, network topolo
 * [Local Development Loop](/deployment/local-dev-loop.md) — Docker Compose + Makefile
 * [Devboxer Deployments](/deployment/devboxer-deployments.md) — Railway via API token
 
+## References
+
+* [Elegant Objects (Yegor Bugayenko)](/references/elegant-objects.md) — The 23 practical OOP recommendations from the book (Volume 1, 2017)
+
 ## Home Lab
 
 * [Overview](/homelab/index.md) — Hardware, storage, and services

@@ -1,5 +1,9 @@
 # Personal Knowledge — Update Log
 
+## 2026-06-20
+* **Creation**: Added [References](/references/index.md) section with [Elegant Objects (Yegor Bugayenko)](/references/elegant-objects.md) — the book's 23 OOP recommendations, captured from OCR-extracted markdown of a scanned copy and cross-linked to [Code Structure](/conventions/code-structure.md) and [Naming Conventions](/conventions/naming.md).
+* **Update**: Promoted Elegant Objects to an applied convention — added its principles to the inlined Key Rules in [USAGE.md](/USAGE.md) (AGENTS.md, CLAUDE.md, Pi contextFiles, and the Droid skill) so agents follow them when writing code, not just reference them.
+
 ## 2026-06-19
 * **Creation**: Documented [USAGE.md](/USAGE.md) — copy-paste snippets for AGENTS.md, CLAUDE.md, Pi, and Droid using gh CLI and local clone paths (private repo compatible). Includes full inline key rules so agents don't need to fetch.
 * **Update**: [Dependencies and Libraries](/conventions/dependencies.md) — changed from "avoid latest" to "always use latest versions" of every dependency; lockfiles pin the latest, not stale versions
