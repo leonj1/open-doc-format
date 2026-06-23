@@ -1,9 +1,9 @@
 ---
 type: Convention
 title: Code Structure and Patterns
-description: How I structure code inside the project directories — I/O interfaces + Fakes (no mocks), dependency injection, type discipline, immutability, Result types over exceptions, functional BDD testing over technical tests, size limits, and the strict separation between routes, services, and I/O.
-tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing]
-timestamp: 2026-06-19T00:00:00Z
+description: How I structure code inside the project directories — I/O interfaces + Fakes (no mocks), dependency injection, literal requirements with no implicit fallbacks, type discipline, immutability, Result types over exceptions, functional BDD testing over technical tests, size limits, and the strict separation between routes, services, and I/O.
+tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks]
+timestamp: 2026-06-23T02:38:59Z
 ---
 
 # I/O Interface Pattern
@@ -77,6 +77,14 @@ class OrderService {
 - **Tests:** `new OrderService(new FakeOrderRepo(...), new FakeCustomerRepo(...))`
 
 No DI framework — manual constructor injection is sufficient and keeps the dependency graph explicit and grep-able.
+
+# Literal Requirements and Fallbacks
+
+Implement the logic exactly as specified. Do not add alternate behavior, default values, silent fallback paths, or "helpful" recovery logic unless the requirement explicitly calls for it.
+
+If a requirement says "read the database connection string from the environment variable," the implementation reads that environment variable and reports failure when it is missing. It does not use a hard-coded default, a local config file, a sample value, or a secondary environment variable unless those fallback sources are explicitly named.
+
+When a required input is absent, fail clearly through the project's normal error mechanism rather than guessing. The caller, deployment configuration, or test setup should provide the required value.
 
 # Size and Complexity Limits
 
