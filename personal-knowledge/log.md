@@ -1,5 +1,8 @@
 # Personal Knowledge — Update Log
 
+## 2026-06-23
+* **Update**: Added no-implicit-fallbacks coding rule to [Code Structure and Patterns](/conventions/code-structure.md), [Configuration Management](/conventions/configuration.md), and the inline agent snippets in [USAGE.md](/USAGE.md). Required values must come from the specified source and fail clearly when absent unless a fallback is explicitly stated.
+
 ## 2026-06-20
 * **Creation**: Added [References](/references/index.md) section with [Elegant Objects (Yegor Bugayenko)](/references/elegant-objects.md) — the book's 23 OOP recommendations, captured from OCR-extracted markdown of a scanned copy and cross-linked to [Code Structure](/conventions/code-structure.md) and [Naming Conventions](/conventions/naming.md).
 * **Update**: Promoted Elegant Objects to an applied convention — added its principles to the inlined Key Rules in [USAGE.md](/USAGE.md) (AGENTS.md, CLAUDE.md, Pi contextFiles, and the Droid skill) so agents follow them when writing code, not just reference them.

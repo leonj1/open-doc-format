@@ -3,7 +3,7 @@ type: Reference
 title: USAGE — How Agents Reference This OKF Bundle
 description: Copy-paste snippets for CLAUDE.md, AGENTS.md, and pi settings. Bundle is in a private GitHub repo — agents access it via gh CLI, local clone, or inline rules.
 tags: [reference, usage, agents, claude-code, droid, pi, codestructure]
-timestamp: 2026-06-19T00:00:00Z
+timestamp: 2026-06-23T02:38:59Z
 ---
 
 # Overview
@@ -86,6 +86,13 @@ Every class that performs I/O (network, disk, database, HTTP) gets:
 Constructor injection. No DI framework. Dependencies are explicit — passed
 through constructors, never imported or instantiated directly.
 
+### Literal Requirements and Fallbacks
+Implement the requested logic exactly as given. Do not add default values,
+alternate sources, silent fallback paths, or recovery behavior unless the
+requirement explicitly asks for them. If a database connection string is
+specified as an environment variable, read that env var and fail clearly when
+it is missing.
+
 ### Size and Complexity Limits
 - Classes: fewer than 700 lines
 - Functions: fewer than 30 lines
@@ -145,6 +152,7 @@ Rare direct commits to main for quick fixes.
 - Config files: values that vary per environment (DB strings, file paths)
 - Environment variables: production/staging credentials
 - .env files: local dev credentials (never committed)
+- Required values have no implicit defaults unless a fallback is explicitly stated
 
 ### Docker and Dev Loop
 - Dockerfile by default for all projects
@@ -181,7 +189,7 @@ Fetch any doc on demand:
 
 ## Code Structure (read first)
 ~/src/open-doc-format/personal-knowledge/conventions/code-structure.md
-Key: I/O interfaces + Fake impls, constructor DI, typed arguments, typed objects over primitives, return values not mutations, no static, Result types not exceptions, <700-line classes, <30-line functions, ≤2 indentations
+Key: I/O interfaces + Fake impls, constructor DI, implement logic exactly as specified with no implicit fallbacks/defaults, typed arguments, typed objects over primitives, return values not mutations, no static, Result types not exceptions, <700-line classes, <30-line functions, ≤2 indentations
 
 ## Project Structure
 ~/src/open-doc-format/personal-knowledge/conventions/project-structure.md
@@ -273,6 +281,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 
 - Every I/O class gets an interface + production impl + Fake impl for tests
 - Constructor-based dependency injection — no DI framework
+- Implement logic exactly as specified — no default values, alternate sources, or fallback paths unless explicitly requested
 - All function arguments strongly typed — prefer typed objects over primitives
 - Functions return values — never mutate incoming arguments
 - No static classes or properties — everything is an instance
