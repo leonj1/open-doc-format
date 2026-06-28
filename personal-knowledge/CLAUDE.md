@@ -1,42 +1,114 @@
-# Jose's Personal Conventions
+# Jose's Coding Conventions
 
-Full OKF bundle: https://github.com/leonj1/open-doc-format/tree/master/personal-knowledge
+This project follows my personal conventions, documented in full at:
+  https://github.com/leonj1/open-doc-format/tree/master/personal-knowledge
 
-Clone for local access:
+The bundle is in a private repo. Clone it once for local access:
   gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 
-Fetch any doc on demand:
-  gh api repos/leonj1/open-doc-format/contents/personal-knowledge/<path> --jq ".content" | base64 -d
+Then read relevant docs from ~/src/open-doc-format/personal-knowledge/.
+
+To fetch a single file without cloning:
+  gh api repos/leonj1/open-doc-format/contents/personal-knowledge/conventions/code-structure.md --jq ".content" | base64 -d
 
 ---
 
-## Code Structure (read first)
-~/src/open-doc-format/personal-knowledge/conventions/code-structure.md
-Key: I/O interfaces + Fake impls, constructor DI, implement logic exactly as specified with no implicit fallbacks/defaults, typed arguments, typed objects over primitives, return values not mutations, no static, Result types not exceptions, <700-line classes, <30-line functions, ≤2 indentations
+## Key Rules (applied to all code in this project)
 
-## Project Structure
-~/src/open-doc-format/personal-knowledge/conventions/project-structure.md
-Key: src/services, src/clients, src/models, src/routes, tests/ at top level
+### I/O Interface Pattern
+Every class that performs I/O (network, disk, database, HTTP) gets:
+- An interface
+- A production implementation
+- A Fake implementation (hand-written, used only in unit tests)
 
-## Naming
-~/src/open-doc-format/personal-knowledge/conventions/naming.md
-Key: nouns for classes, verbs for functions, depth = name length
+### Dependency Injection
+Constructor injection. No DI framework. Dependencies are explicit — passed
+through constructors, never imported or instantiated directly.
 
-## Git Commits
-~/src/open-doc-format/personal-knowledge/conventions/git-commits.md
-Key: FEAT/BUG/CHORE prefixes, feature branches, main/master default
+### Literal Requirements and Fallbacks
+Implement the requested logic exactly as given. Do not add default values,
+alternate sources, silent fallback paths, or recovery behavior unless the
+requirement explicitly asks for them. If a database connection string is
+specified as an environment variable, read that env var and fail clearly when
+it is missing.
 
-## Deployment
-~/src/open-doc-format/personal-knowledge/deployment/
-Key: Vercel for static, Railway for backends, Dockerfiles, docker-compose, Makefile
+### Size and Complexity Limits
+- Classes: fewer than 700 lines
+- Functions: fewer than 30 lines
+- Indentation: max 2 levels (extract early if deeper)
 
-## Elegant Objects Principles
-~/src/open-doc-format/personal-knowledge/references/elegant-objects.md
-Key: no -er class names, immutable objects, no static/utility classes, no getters/setters, no NULL args or returns, always use interfaces, fakes over mocks
+### Route Handler Discipline
+Route handlers in src/routes/ call services in src/services/ ONLY.
+Handlers never make I/O calls directly.
 
----
+### Type Discipline
+- All function arguments must be strongly typed — no `any`, no untyped params.
+- Prefer typed objects over primitives — `EmailAddress` not `string`, `CustomerId` not `number`.
+- Functions return values — never mutate incoming arguments. Return new state.
 
-Before writing code:
-1. Read ~/src/open-doc-format/personal-knowledge/conventions/code-structure.md
-2. Read ~/src/open-doc-format/personal-knowledge/conventions/project-structure.md
-3. Apply all rules listed above
+### No Static Classes or Properties
+- Every dependency is an instance passed through a constructor. No static methods.
+- The only exception: a `main` entry point if the language requires it.
+
+### Error Handling: Result Types, Not Exceptions
+- Do not throw exceptions for expected outcomes (e.g., "user not found").
+- Return a Result type (`{ ok: true, value } | { ok: false, error }`) if the language supports it.
+- Go: return `(value, error)`. TypeScript: use discriminated unions. Python: return union types.
+- Exceptions are for truly unrecoverable situations only. Never use try/catch as control flow.
+
+```
+Request → Route Handler → Service → Client (I/O interface) → External World
+```
+
+### Project Layout
+```
+project/
+├── src/
+│   ├── services/      # Business logic
+│   ├── clients/       # External API clients, DB connectors
+│   ├── models/        # Types, schemas, entities
+│   └── routes/        # HTTP handlers (thin, delegates to services)
+└── tests/             # Top-level, sibling to src/
+```
+
+### Naming
+Classes = nouns. Functions = verbs. Top-level classes short (Report),
+deeper classes longer (PdfReport). Follow language conventions otherwise.
+
+### Commits
+FEAT: for features. BUG: for bug fixes. CHORE: for trivial changes.
+Default branch: main or master. Feature branches for features and hotfixes.
+Rare direct commits to main for quick fixes.
+
+### Languages
+- TypeScript: AI/LLM backends, when strong types needed
+- Python: backends needing extensibility
+- Go: when a statically linked binary matters
+- Java: optional, when required
+- Rust: rare, only when the project demands it
+
+### Configuration
+- Config files: values that vary per environment (DB strings, file paths)
+- Environment variables: production/staging credentials
+- .env files: local dev credentials (never committed)
+- Required values have no implicit defaults unless a fallback is explicitly stated
+
+### Deployment Targets
+- Vercel: static sites and frontends
+- Railway: backends and services
+- Full deployment docs: ~/src/open-doc-format/personal-knowledge/deployment/
+
+### Docker and Dev Loop
+- Dockerfile by default for all projects
+- docker-compose for multi-container projects
+- Makefile in every project: make build, make test, make start, make stop, make restart
+- Omit Dockerfile only when host filesystem access is required
+
+### Elegant Objects Principles
+Follow the OOP recommendations from Yegor Bugayenko's *Elegant Objects*:
+no -er class names, immutable objects, no static methods/utility classes,
+no getters/setters, no NULL args or returns, always use interfaces, and
+fakes over mocks. Full list: ~/src/open-doc-format/personal-knowledge/references/elegant-objects.md
+
+### Full Bundle
+Read more at ~/src/open-doc-format/personal-knowledge/index.md after cloning.

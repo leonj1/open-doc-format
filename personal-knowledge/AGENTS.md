@@ -93,6 +93,11 @@ Rare direct commits to main for quick fixes.
 - .env files: local dev credentials (never committed)
 - Required values have no implicit defaults unless a fallback is explicitly stated
 
+### Deployment Targets
+- Vercel: static sites and frontends
+- Railway: backends and services
+- Full deployment docs: ~/src/open-doc-format/personal-knowledge/deployment/
+
 ### Docker and Dev Loop
 - Dockerfile by default for all projects
 - docker-compose for multi-container projects
