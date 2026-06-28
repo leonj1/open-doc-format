@@ -112,3 +112,7 @@ fakes over mocks. Full list: ~/src/open-doc-format/personal-knowledge/references
 
 ### Full Bundle
 Read more at ~/src/open-doc-format/personal-knowledge/index.md after cloning.
+
+# Project
+Since this repo could be just a piece of a larger project then read PROJECT.md if it exists to understand how this fits into the bigger picture.
+
