@@ -1,0 +1,4 @@
+interface:
+  display_name: "OKF"
+  short_description: "Create and validate OKF knowledge bundles"
+  default_prompt: "Use $okf to create, validate, or navigate an Open Knowledge Format bundle."
