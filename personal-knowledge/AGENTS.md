@@ -116,3 +116,10 @@ Read more at ~/src/open-doc-format/personal-knowledge/index.md after cloning.
 # Project
 Since this repo could be just a piece of a larger project then read PROJECT.md if it exists to understand how this fits into the bigger picture.
 
+# Docs
+If this repo has a `./docs` folder, treat it as the table of contents for the
+project's API surface. Read `docs/index.md` (or `docs/README.md` if no index
+exists) first to see what's documented before exploring source directly, and
+consult the relevant doc under `docs/` before implementing or modifying any
+API endpoint, schema, or public interface.
+
