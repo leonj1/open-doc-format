@@ -68,8 +68,10 @@ project/
 │   ├── clients/       # External API clients, DB connectors
 │   ├── models/        # Types, schemas, entities
 │   └── routes/        # HTTP handlers (thin, delegates to services)
-└── tests/             # Top-level, sibling to src/
+└── tests/             # Tests only; top-level sibling to src/
 ```
+Production source belongs only in `src/`; tests belong only in `tests/`. Never
+co-locate test files and source files, even when the language commonly does so.
 
 ### Naming
 Classes = nouns. Functions = verbs. Top-level classes short (Report),
@@ -122,4 +124,3 @@ project's API surface. Read `docs/index.md` (or `docs/README.md` if no index
 exists) first to see what's documented before exploring source directly, and
 consult the relevant doc under `docs/` before implementing or modifying any
 API endpoint, schema, or public interface.
-
