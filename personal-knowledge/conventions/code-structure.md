@@ -1,7 +1,7 @@
 ---
 type: Convention
 title: Code Structure and Patterns
-description: How I structure code inside the project directories — I/O interfaces + Fakes (no mocks), dependency injection, literal requirements with no implicit fallbacks, type discipline, immutability, Result types over exceptions, functional BDD testing over technical tests, size limits, and the strict separation between routes, services, and I/O.
+description: How I structure code — I/O interfaces with Fakes under tests/, dependency injection, no implicit fallbacks, type discipline, immutability, Result types, functional BDD testing, size limits, and route/service/I/O separation.
 tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks]
 timestamp: 2026-07-11T00:00:00Z
 ---
@@ -13,7 +13,7 @@ Whenever a class performs any form of I/O — network, disk, database, HTTP — 
 | Implementation | Purpose |
 |---------------|---------|
 | **Production class** | The real implementation — talks to the actual database, filesystem, or external API. |
-| **Fake class** | Wired in only during **unit testing** — returns canned responses, records calls, never touches real I/O. |
+| **Fake class** | Test-support implementation stored under the top-level `tests/` directory — returns canned responses, records calls, and never touches real I/O. |
 
 ```typescript
 // Example pattern
@@ -53,7 +53,7 @@ class FakeUserRepository implements UserRepository {
 }
 ```
 
-If a test needs a different behavior from the Fake, extend the Fake class — don't reach for a mocking framework. The Fake is part of the codebase, lives alongside production code, and is maintained with the same discipline.
+If a test needs a different behavior from the Fake, extend the Fake class — don't reach for a mocking framework. Every Fake is test-support code and must live under the top-level `tests/` directory, never under `src/` or beside its production implementation. It remains part of the codebase and is maintained with the same discipline as production code.
 
 # Dependency Injection
 

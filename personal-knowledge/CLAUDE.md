@@ -19,7 +19,7 @@ To fetch a single file without cloning:
 Every class that performs I/O (network, disk, database, HTTP) gets:
 - An interface
 - A production implementation
-- A Fake implementation (hand-written, used only in unit tests)
+- A Fake implementation (hand-written, stored under `tests/`, and used only in tests)
 
 ### Dependency Injection
 Constructor injection. No DI framework. Dependencies are explicit — passed
@@ -68,10 +68,12 @@ project/
 │   ├── clients/       # External API clients, DB connectors
 │   ├── models/        # Types, schemas, entities
 │   └── routes/        # HTTP handlers (thin, delegates to services)
-└── tests/             # Tests only; top-level sibling to src/
+└── tests/             # Tests and test-support code, including all Fakes
 ```
-Production source belongs only in `src/`; tests belong only in `tests/`. Never
-co-locate test files and source files, even when the language commonly does so.
+Production source belongs only in `src/`; tests and test-support code belong only
+in `tests/`. Every Fake class must reside under `tests/`, never under `src/` or
+beside its production implementation. Never co-locate test files and production
+source files, even when the language commonly does so.
 
 ### Naming
 Classes = nouns. Functions = verbs. Top-level classes short (Report),
