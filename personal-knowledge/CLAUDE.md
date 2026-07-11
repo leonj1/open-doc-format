@@ -21,6 +21,16 @@ Every class that performs I/O (network, disk, database, HTTP) gets:
 - A production implementation
 - A Fake implementation (hand-written, stored under `tests/`, and used only in tests)
 
+The interface isolates application code from filesystem, database, device, and
+API contracts. When an external contract changes, keep the project-owned
+interface stable and update its production implementation in one place unless
+the application's required behavior also changes. Fakes exercise consumers of
+that interface without touching the real boundary; they do not test the
+production adapter. Use separate contract or integration tests for real-boundary
+behavior. Mocking frameworks are prohibited because configured expectations can
+mirror implementation details and produce false confidence; neither mocks nor
+Fakes guarantee correctness by themselves.
+
 ### Dependency Injection
 Constructor injection. No DI framework. Dependencies are explicit — passed
 through constructors, never imported or instantiated directly.

@@ -143,7 +143,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 
 ## Key Rules
 
-- Every I/O class gets an interface + production impl + Fake impl stored under tests/
+- Every I/O class gets a stable project-owned interface + production impl + Fake impl stored under tests/; external contract changes stay in the production adapter, while Fakes test consumers without claiming to test the real boundary
 - Constructor-based dependency injection — no DI framework
 - Implement logic exactly as specified — no default values, alternate sources, or fallback paths unless explicitly requested
 - All function arguments strongly typed — prefer typed objects over primitives

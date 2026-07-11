@@ -1,6 +1,6 @@
 # Concepts
 
-* [Code Structure and Patterns](code-structure.md) — How I structure code — I/O interfaces with Fakes under tests/, dependency injection, Result types, and quality tests that prove behavior, boundary contracts, errors, and side effects.
+* [Code Structure and Patterns](code-structure.md) — Stable I/O interfaces isolate external contract changes; Fakes under tests/ exercise consumers without replacing real-boundary tests; quality tests prove behavior, contracts, errors, and side effects.
 * [Configuration Management](configuration.md) — How I handle config files, environment variables, credentials, explicit function arguments, and required values without implicit fallbacks.
 * [Dependencies and Default Libraries](dependencies.md) — Always use latest library versions with pinned lockfiles. Vendoring for Go. Go defaults: mux and zerolog. For other languages, follow industry standards.
 * [Git and Commit Conventions](git-commits.md) — Branch strategy, commit message format, and PR workflow for personal and professional projects.

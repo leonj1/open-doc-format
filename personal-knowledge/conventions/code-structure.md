@@ -33,6 +33,17 @@ class FakeUserRepository implements UserRepository {
 
 The Fake is not a mock. Mocking frameworks (Jest mocks, Mockito, unittest.mock, testify/mock, etc.) are **not allowed**. They hide behavior behind auto-generated proxies, make tests brittle by coupling to implementation details, and encourage testing that passes without verifying real behavior.
 
+## Purpose of the Interface and Fake
+
+The interface is an abstraction layer between application code and a real boundary such as a filesystem, database, device, or external API. Application code depends on the project-owned interface, not on the boundary's SDK, wire format, driver, or vendor contract.
+
+This provides two benefits:
+
+1. **Boundary changes stay in one place.** When the real boundary changes its contract, SDK, authentication scheme, serialization format, or protocol, update the production implementation that translates between that boundary and the stable project-owned interface. The services and routes that consume the interface do not change unless the application's own required behavior changes.
+2. **Tests use explicit behavior instead of generated mocks.** A hand-written Fake provides a reusable, inspectable implementation of the same interface. This removes the need to configure mock return values and interaction expectations separately in each test. Mock expectations can merely repeat the current implementation and still produce false positives when important behavior is omitted or incorrectly wired. Tests using Fakes must instead assert the returned values, resulting Fake state, recorded boundary operations, and other promised effects.
+
+A Fake does **not** emulate or verify the real boundary. It deliberately avoids the filesystem, database, device, network, or vendor API. Tests using a Fake prove how consumer code behaves against the project-owned interface; they do not prove that the production implementation authenticates, serializes, queries, handles permissions, or follows the real protocol correctly. Neither Fakes nor mocks guarantee correctness. The production implementation requires separate contract or integration tests when its behavior against the real boundary must be verified.
+
 A Fake is a hand-written class that:
 - Implements the same interface as the production class
 - Returns deterministic, predictable data

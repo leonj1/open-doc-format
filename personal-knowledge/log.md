@@ -1,5 +1,8 @@
 # Personal Knowledge — Update Log
 
+## 2026-07-11
+* **Update**: [Code Structure and Patterns](/conventions/code-structure.md) now defines interfaces as stable, project-owned abstractions around external boundaries. Fakes test consumer behavior without touching or claiming to verify the real boundary; production adapters use separate contract or integration tests. The guidance also explains why hand-written Fakes are preferred over configurable mocking frameworks without claiming that either guarantees correctness.
+
 ## 2026-07-10
 * **Update**: [Project Structure](/conventions/project-structure.md) now requires dedicated, separate top-level `src/` and `tests/` directories. Production source and test files must never be co-located, including in languages that commonly place them together.
 
@@ -13,7 +16,7 @@
 ## 2026-06-19
 * **Creation**: Documented [USAGE.md](/USAGE.md) — copy-paste snippets for AGENTS.md, CLAUDE.md, Pi, and Droid using gh CLI and local clone paths (private repo compatible). Includes full inline key rules so agents don't need to fetch.
 * **Update**: [Dependencies and Libraries](/conventions/dependencies.md) — changed from "avoid latest" to "always use latest versions" of every dependency; lockfiles pin the latest, not stale versions
-* **Update**: [Code Structure and Patterns](/conventions/code-structure.md) — added code coverage requirement: above 80% enforced in CI or manually before merge; untestable code covered through Fake implementations
+* **Update**: [Code Structure and Patterns](/conventions/code-structure.md) — added code coverage requirement: above 80% enforced in CI or manually before merge; consumer code isolated from I/O through Fake implementations
 * **Update**: Expanded [Code Structure and Patterns](/conventions/code-structure.md) — added Testing Philosophy: tests must assert functional user outcomes (BDD), not technical implementation details. Asserting fields is banned; asserting user-visible behavior is required. Implementation detail tests freeze the codebase and are not allowed.
 * **Creation**: Documented [Coding Modalities](/tools/coding-modalities.md) — VSCode, Zed, Devboxer, Telegram
 * **Creation**: Documented [CLI Tools](/tools/cli-tools.md) — Bash, tmux, vim, jq, curl, git, AI agents
