@@ -151,7 +151,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 - No static classes or properties — everything is an instance
 - Result types over exceptions — never use exceptions for control flow
 - Classes <700 lines, functions <30 lines, max 2 indentations
-- Route handlers never make I/O calls — delegate to services only
+- Routes and endpoints never make I/O calls — delegate to services only; route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`
 - Commit messages: FEAT/BUG/CHORE prefix, feature branches, main/master default
 - Project layout: production source only in src/; tests, test-support code, and every Fake only in a separate top-level tests/ directory; never co-locate production and test code
 - TypeScript for AI/LLM backends, Python for extensibility, Go for static binaries

@@ -94,25 +94,25 @@ When a required input is absent, fail clearly through the project's normal error
 | **Function size** | Fewer than 30 lines | A function over 30 lines does too much. It's doing multiple things or handling too many edge cases inline. |
 | **Cyclomatic complexity** | No more than 2 indentations | Deep nesting is the primary readability killer. If you're three indents deep, extract a function or use early returns. |
 
-# Route Handler Discipline
+# Route Discipline
 
-Handlers in `src/routes/` have **one job**: call services in `src/services/`. They never perform I/O directly.
+Routes and endpoints in `src/routes/` have **one job**: call services in `src/services/`. They never perform I/O directly. Route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
 
 ```
-Request → Route Handler → Service → Client (I/O interface) → External World
+Request → Route → Service → Client (I/O interface) → External World
 ```
 
-| Good (handler) | Bad (handler) |
-|----------------|---------------|
+| Good (route) | Bad (route) |
+|--------------|-------------|
 | `orderService.placeOrder(req.body)` | `fetch("https://api.example.com/...")` |
 | `userService.getById(req.params.id)` | `db.query("SELECT * FROM users WHERE...")` |
 
-The handler translates HTTP concerns (request parsing, response formatting, status codes) into service calls. The service handles business logic. The client (behind an interface) handles I/O.
+The route translates HTTP concerns (request parsing, response formatting, status codes) into service calls. The service handles business logic. The client (behind an interface) handles I/O.
 
 # Request Flow
 
 ```
-Route Handler
+Route
   │ parses request, validates input
   ▼
 Service
@@ -122,8 +122,8 @@ Service
 Client (ProductionIoCient or FakeIoCient)
   │ performs actual or fake I/O
   ▼
-Returns through the chain back to the handler
-  │ handler formats HTTP response
+Returns through the chain back to the route
+  │ route formats HTTP response
   ▼
 Response to caller
 ```

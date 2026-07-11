@@ -20,7 +20,7 @@ Personal software development practices, home lab infrastructure, network topolo
 * [Language Preferences](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/languages.md) — TypeScript, Python, Go, Java, Rust
 * [Project Structure](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/project-structure.md) — Production source in src/; tests, test-support code, and all Fake classes in tests/
 * [Code Structure and Patterns](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/code-structure.md) — I/O interfaces with Fakes under tests/, dependency injection, no implicit fallbacks, size limits, route discipline
-* [Naming Conventions](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/naming.md) — Nouns for classes, verbs for functions
+* [Naming Conventions](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/naming.md) — Elegant Objects class names; no action or role names ending in -er/-or; verbs for functions
 * [Configuration Management](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/configuration.md) — Config files, env vars, .env, explicit function arguments, and required values without implicit fallbacks
 * [Git and Commits](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/git-commits.md) — FEAT/BUG/CHORE prefixes, feature branches
 * [Dependencies and Libraries](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/dependencies.md) — Pinned versions, Go defaults (mux, zerolog)

@@ -37,9 +37,10 @@ it is missing.
 - Functions: fewer than 30 lines
 - Indentation: max 2 levels (extract early if deeper)
 
-### Route Handler Discipline
-Route handlers in src/routes/ call services in src/services/ ONLY.
-Handlers never make I/O calls directly.
+### Route Discipline
+Routes and endpoints in src/routes/ call services in src/services/ ONLY.
+They never make I/O calls directly. Route classes use object names such as
+`HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
 
 ### Type Discipline
 - All function arguments must be strongly typed — no `any`, no untyped params.
@@ -57,7 +58,7 @@ Handlers never make I/O calls directly.
 - Exceptions are for truly unrecoverable situations only. Never use try/catch as control flow.
 
 ```
-Request → Route Handler → Service → Client (I/O interface) → External World
+Request → Route → Service → Client (I/O interface) → External World
 ```
 
 ### Project Layout
@@ -67,7 +68,7 @@ project/
 │   ├── services/      # Business logic
 │   ├── clients/       # External API clients, DB connectors
 │   ├── models/        # Types, schemas, entities
-│   └── routes/        # HTTP handlers (thin, delegates to services)
+│   └── routes/        # HTTP routes and endpoints (thin, delegates to services)
 └── tests/             # Tests and test-support code, including all Fakes
 ```
 Production source belongs only in `src/`; tests and test-support code belong only

@@ -17,7 +17,7 @@ I treat these as **applied conventions**, except where an explicit project conve
 
 | # | Recommendation | Gist |
 |---|----------------|------|
-| 1.1 | **Never use -er names** | Name classes after *what they are*, not what they do. Avoid `Manager`, `Controller`, `Helper`, `Validator`, `Parser` — they describe procedures, not objects. |
+| 1.1 | **Never use action or role names ending in -er/-or** | Name classes after *what they are*, not what they do. Avoid `Handler`, `Manager`, `Controller`, `Helper`, `Validator`, and `Parser` — they describe procedures or roles, not objects. Use object names such as `HttpRoute` or `OrderEndpoint`; verbs such as `handle()` belong on methods. |
 | 1.2 | **Make one constructor primary** | Have a single "primary" constructor that initializes all fields; all "secondary" constructors delegate to it. Place the primary one last. |
 | 1.3 | **Keep constructors code-free** | Constructors should only assign arguments to fields — no computation, parsing, or I/O. Do real work lazily, when the object is used. |
 
@@ -59,7 +59,7 @@ I treat these as **applied conventions**, except where an explicit project conve
 # Related
 
 - [Code Structure and Patterns](/conventions/code-structure.md) — my conventions overlap with 2.6 (immutable), 2.8 (fakes not mocks), 3.2 (no static), 3.6 (constructor injection), and 4.1 (no NULL via Result types), and explicitly override 4.2 by requiring Result values for expected failures.
-- [Naming Conventions](/conventions/naming.md) — relates to 1.1 (never -er names) and 2.4 (method naming).
+- [Naming Conventions](/conventions/naming.md) — applies 1.1 (never action or role class names ending in -er/-or) and 2.4 (method naming).
 
 # Citations
 
