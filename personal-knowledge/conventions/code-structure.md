@@ -3,7 +3,7 @@ type: Convention
 title: Code Structure and Patterns
 description: How I structure code inside the project directories — I/O interfaces + Fakes (no mocks), dependency injection, literal requirements with no implicit fallbacks, type discipline, immutability, Result types over exceptions, functional BDD testing over technical tests, size limits, and the strict separation between routes, services, and I/O.
 tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks]
-timestamp: 2026-06-23T02:38:59Z
+timestamp: 2026-07-11T00:00:00Z
 ---
 
 # I/O Interface Pattern
@@ -224,12 +224,12 @@ func FindUser(id string) (User, error) {
 ```
 
 ```python
-# Good — Union type in Python 3.10+
-def find_user(id: str) -> User | NotFoundError:
+# Good — tagged Result value in Python
+def find_user(id: str) -> Result[User, NotFoundError]:
     user = db.query("SELECT * FROM users WHERE id = ?", id)
     if not user:
-        return NotFoundError("User not found")
-    return user
+        return Err(NotFoundError("User not found"))
+    return Ok(user)
 ```
 
 ## Exceptions Not for Control Flow
@@ -238,11 +238,11 @@ Exceptions must not be used as a control flow mechanism:
 
 | Good | Bad |
 |------|-----|
-| `result = find_user(id); if isinstance(result, NotFoundError): ...` | `try: user = find_user(id) except NotFoundError: ...` |
+| `result = find_user(id); if result.ok: ... else: ...` | `try: user = find_user(id) except NotFoundError: ...` |
 | `if err != nil { return err }` | `panic(err)` / `recover()` for expected conditions |
 | Return a Result/Either | `throw` / `raise` for business rule violations |
 
-The caller should always check the return value, not wrap calls in try/catch for expected outcomes. An uncaught exception means something broke that shouldn't have — not "the user wasn't found."
+The caller should inspect the Result's explicit success/error tag, not inspect the concrete type of its value and not wrap calls in try/catch for expected outcomes. An uncaught exception means something broke that shouldn't have — not "the user wasn't found."
 
 # Testing Philosophy
 
