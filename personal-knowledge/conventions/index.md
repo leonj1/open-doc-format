@@ -6,5 +6,5 @@
 * [Git and Commit Conventions](git-commits.md) — Branch strategy, commit message format, and PR workflow for personal and professional projects.
 * [Language Preferences](languages.md) — Which programming languages I use and the decision framework for choosing one over another.
 * [Naming Conventions](naming.md) — How I name classes, functions, and files — follow the language, nouns for classes, verbs for functions, specificity scales with depth.
-* [Project Structure](project-structure.md) — Standard directory layout for backend projects — services, clients, models, routes — and test placement rules.
+* [Project Structure](project-structure.md) — Standard backend layout with production source and test code kept in dedicated, separate src/ and tests/ directories.
 * [README 30-3 Rule](readme-30-3.md) — Every project README must convey what the project is in 30 seconds and how to get it running in 3 minutes.

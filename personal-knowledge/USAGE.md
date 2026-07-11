@@ -153,7 +153,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 - Classes <700 lines, functions <30 lines, max 2 indentations
 - Route handlers never make I/O calls — delegate to services only
 - Commit messages: FEAT/BUG/CHORE prefix, feature branches, main/master default
-- Project layout: src/services, src/clients, src/models, src/routes
+- Project layout: production source only in src/; tests only in a separate top-level tests/ directory; never co-locate source and test files
 - TypeScript for AI/LLM backends, Python for extensibility, Go for static binaries
 - Dockerfiles by default, docker-compose for multi-container
 - make build, make test, make start, make stop, make restart

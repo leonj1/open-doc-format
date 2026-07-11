@@ -1,5 +1,8 @@
 # Personal Knowledge — Update Log
 
+## 2026-07-10
+* **Update**: [Project Structure](/conventions/project-structure.md) now requires dedicated, separate top-level `src/` and `tests/` directories. Production source and test files must never be co-located, including in languages that commonly place them together.
+
 ## 2026-06-23
 * **Update**: Added no-implicit-fallbacks coding rule to [Code Structure and Patterns](/conventions/code-structure.md), [Configuration Management](/conventions/configuration.md), and the inline agent snippets in [USAGE.md](/USAGE.md). Required values must come from the specified source and fail clearly when absent unless a fallback is explicitly stated.
 

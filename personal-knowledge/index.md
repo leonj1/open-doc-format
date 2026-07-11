@@ -18,7 +18,7 @@ Personal software development practices, home lab infrastructure, network topolo
 ## Development Conventions
 
 * [Language Preferences](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/languages.md) — TypeScript, Python, Go, Java, Rust
-* [Project Structure](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/project-structure.md) — Standard backend layout: services, clients, models, routes
+* [Project Structure](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/project-structure.md) — Dedicated, separate src/ and tests/ directories; source and test files are never co-located
 * [Code Structure and Patterns](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/code-structure.md) — I/O interfaces, dependency injection, no implicit fallbacks, size limits, route discipline
 * [Naming Conventions](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/naming.md) — Nouns for classes, verbs for functions
 * [Configuration Management](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/configuration.md) — Config files, env vars, .env, required values without implicit defaults

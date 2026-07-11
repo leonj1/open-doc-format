@@ -1,9 +1,9 @@
 ---
 type: Convention
 title: Project Structure
-description: Standard directory layout for backend projects — services, clients, models, routes — and test placement rules.
-tags: [conventions, structure, backend, project-layout]
-timestamp: 2026-06-19T00:00:00Z
+description: Standard backend layout with production source and test code kept in dedicated, separate src/ and tests/ directories.
+tags: [conventions, structure, backend, project-layout, testing]
+timestamp: 2026-07-10T00:00:00Z
 ---
 
 # Standard Backend Layout
@@ -15,7 +15,7 @@ project/
 │   ├── clients/       # External API clients, SDK wrappers, database connectors
 │   ├── models/        # Data models, types, schemas, entities
 │   └── routes/        # HTTP handlers, controllers, API route definitions
-├── tests/             # Test suite (preferred location)
+├── tests/             # Test suite; never mixed into src/
 ├── package.json        # or pyproject.toml, go.mod, etc.
 └── README.md
 ```
@@ -31,15 +31,19 @@ project/
 
 # Test Placement
 
-Tests live in a top-level `tests/` directory, **sibling to `src/`**:
+Every project must have both a dedicated top-level `src/` directory and a dedicated top-level `tests/` directory. They are siblings and have distinct responsibilities:
+
+- `src/` contains production source files only.
+- `tests/` contains test files only.
+- Test files and source files must never be co-located in the same directory.
 
 ```
 project/
-├── src/
-└── tests/
+├── src/               # Production source only
+└── tests/             # Tests only
 ```
 
-**Exception:** If the language or framework convention demands co-located test files (e.g., Go's `_test.go` alongside the source, Rust's `#[cfg(test)]` modules), I follow the language convention rather than forcing the `tests/` directory pattern.
+This separation is intentional and applies even when a language or framework commonly co-locates tests with source files. Configure the project's tools to discover and run tests from `tests/`; do not place tests under `src/` or beside production files.
 
 # Principle
 
