@@ -21,7 +21,7 @@ Personal software development practices, home lab infrastructure, network topolo
 * [Project Structure](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/project-structure.md) — Dedicated, separate src/ and tests/ directories; source and test files are never co-located
 * [Code Structure and Patterns](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/code-structure.md) — I/O interfaces, dependency injection, no implicit fallbacks, size limits, route discipline
 * [Naming Conventions](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/naming.md) — Nouns for classes, verbs for functions
-* [Configuration Management](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/configuration.md) — Config files, env vars, .env, required values without implicit defaults
+* [Configuration Management](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/configuration.md) — Config files, env vars, .env, explicit function arguments, and required values without implicit fallbacks
 * [Git and Commits](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/git-commits.md) — FEAT/BUG/CHORE prefixes, feature branches
 * [Dependencies and Libraries](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/dependencies.md) — Pinned versions, Go defaults (mux, zerolog)
 
