@@ -246,18 +246,28 @@ The caller should inspect the Result's explicit success/error tag, not inspect t
 
 # Testing Philosophy
 
-## Functional, Not Technical
+## Prove the Behavior, Not Merely Success
 
-Tests must assert **product functional features** — what the user can do — not technical implementation details. A test should verify an outcome the user cares about, not the internal wiring that produced it.
+Tests must prove **product behavior** and externally observable effects. A success flag alone is insufficient when the feature promises additional outcomes. The assertions must be strong enough that deleting, corrupting, duplicating, or misrouting an important value causes the test to fail.
 
-### Valid Test (Functional)
+For each behavior, verify every outcome that is part of its contract:
 
-A test for an email client should verify the user can **send an email** and receive a success response:
+- the returned `Result`, including the correct success value or error code and message;
+- state visible through a public interface, such as a persisted order or updated balance;
+- effects at an I/O boundary, such as the complete email handed to an email service;
+- absence of prohibited effects, such as sending nothing after validation fails; and
+- relevant cardinality or ordering when duplicates or sequence change product behavior.
+
+Use distinct, recognizable input values so accidental field swaps, omissions, and hard-coded values are detected. Do not reproduce the production algorithm in the test to calculate the expected answer; state the expected behavior explicitly.
+
+### Quality Functional Test
+
+A fake email service records messages accepted at its public boundary. That recorded state is an observable effect, not a private implementation detail:
 
 ```typescript
-// ✅ Tests the feature the user cares about
-it("allows the user to send an email with recipient, subject, body, and optional CC and BCC", async () => {
-  const client = new EmailClient(new FakeEmailService());
+it("sends the complete email requested by the user", async () => {
+  const email = new FakeEmailService();
+  const client = new EmailClient(email);
 
   const result = await client.send({
     recipient: "user@example.com",
@@ -267,63 +277,87 @@ it("allows the user to send an email with recipient, subject, body, and optional
     bcc: ["archive@example.com"],
   });
 
-  expect(result.ok).toBe(true);
-  // The user achieved their goal: the email was sent successfully.
-});
-```
-
-This test asserts the **intent** — the user wanted to send an email, and it worked. The test passes or fails based on whether the feature functions for the user, not based on internal implementation details.
-
-### Invalid Test (Technical)
-
-A test that asserts individual fields were included in the request is testing **implementation**, not behavior:
-
-```typescript
-// ❌ Tests internal structure, not user outcome
-it("includes recipient, subject, and body in the email", async () => {
-  const client = new EmailClient(new FakeEmailService());
-
-  await client.send({
+  expect(result).toEqual(Ok(undefined));
+  expect(email.sentMessages()).toEqual([{
     recipient: "user@example.com",
     subject: "Meeting tomorrow",
     body: "Let's sync at 2pm.",
-  });
-
-  // These assertions test how the email was constructed internally.
-  // The user doesn't care that fields were "included."
-  // The user cares that the email was sent successfully.
-  expect(client.lastRequest.recipient).toBe("user@example.com");
-  expect(client.lastRequest.subject).toBe("Meeting tomorrow");
-  expect(client.lastRequest.body).toBe("Let's sync at 2pm.");
+    cc: ["manager@example.com"],
+    bcc: ["archive@example.com"],
+  }]);
 });
 ```
 
-Asserting that `recipient`, `subject`, and `body` are present tests internal structure. It doesn't test whether the user can send an email. If the implementation changes to use a different internal representation, this test breaks even though the feature still works — the test is coupled to the implementation, not the behavior.
+This test fails if the client reports success without sending, drops a field, changes a value, sends to the wrong recipient, or sends more than once.
+
+### Weak Test
+
+```typescript
+it("returns success", async () => {
+  const client = new EmailClient(new FakeEmailService());
+  const result = await client.send(validEmail);
+  expect(result.ok).toBe(true);
+});
+```
+
+This is inadequate by itself. A fake or production client that always returns success passes even when no email is delivered.
+
+## Required Test Cases
+
+Each feature must cover the cases relevant to its contract:
+
+| Case | What to prove |
+|------|---------------|
+| Happy path | Correct result, state change, and complete external effect |
+| Validation failure | Specific error and no state change or external effect |
+| Boundary failure | Dependency error is translated or propagated as the declared `Result` |
+| Edge and boundary values | Empty, minimum, maximum, duplicate, and special values behave as specified |
+| Authorization | Allowed actions succeed; forbidden actions fail without side effects |
+| Idempotency/retry | Repetition does not duplicate effects when the contract promises idempotency |
+| Regression | The test fails for the known defect and passes for the corrected behavior |
+
+Do not add irrelevant cases mechanically. Choose cases from requirements, invariants, past defects, and credible failure modes.
+
+## Boundary Contracts and Orchestration
+
+Assertions on serialized requests and collaborator interactions are valid when those details cross a defined boundary or constitute the behavior being tested. Examples include:
+
+- an HTTP adapter emits the required method, path, headers, and body;
+- a repository persists the correct entity;
+- invalid input causes zero calls to an external service;
+- a payment is submitted exactly once; and
+- events are published in a required order.
+
+Prefer asserting a Fake's resulting state or recorded domain operations over asserting incidental low-level calls. Call counts and ordering must be asserted only when too many, too few, or reordered operations would change correctness.
+
+Production I/O implementations also require contract or integration tests against the real protocol or a faithful test instance. Tests using a Fake prove the consumer's behavior against the interface; they do not prove that the production implementation authenticates, serializes, queries, or handles the real system correctly. Run real-boundary tests separately when they are slower or require credentials.
 
 ## The BDD Litmus Test
 
-Every test should answer: **"What can the user do?"** — not **"What does the code look like inside?"**
+Every test must be explainable as a behavior, invariant, boundary contract, or regression. Name it so the scenario and expected outcome are clear.
 
-| Test should assert | Test should NOT assert |
-|--------------------|------------------------|
-| The user received a confirmation | A specific field was populated |
-| The order was placed successfully | The order object has 7 properties |
-| The user sees their data on the page | The view model contains specific keys |
-| The system rejected invalid input with a clear message | The validator called `checkFoo()` before `checkBar()` |
-| The user can log in with valid credentials | The auth token is 256 bytes |
+| Assert | Avoid |
+|--------|-------|
+| Complete email accepted by the email boundary | A generic `ok` flag alone |
+| Order persisted with the requested items and total | Shape of a private intermediate object |
+| Invalid request returns the declared error and writes nothing | Direct calls to private validation methods |
+| HTTP adapter sends the provider's required payload | Local variable names or helper selection |
+| Payment occurs exactly once | Call count when repetition has no behavioral meaning |
 
-If you change the internal implementation and the test still passes because the **user-facing behavior is unchanged**, that's a good test. If you refactor internals and the test breaks even though the feature works, the test is testing the wrong thing.
+A refactor may legitimately require test changes when it changes a public boundary contract. Tests must not depend on private methods, transient intermediate objects, local control flow, or helper-call order when those details have no observable effect.
 
-## Implementation Detail Tests Are Banned
+## Test Quality Checklist
 
-Tests that assert on:
-- The order of internal method calls
-- The presence of specific fields in intermediate objects
-- The exact structure of a database query
-- The number of times a collaborator was called
-- Private method behavior
+A quality test is:
 
-...are not allowed. They freeze the implementation in place and make refactoring painful. The only valid assertion is on the **user-visible outcome** of the feature.
+- **behavioral** — tied to a requirement, invariant, contract, or defect;
+- **specific** — checks exact meaningful values, not only truthiness or absence of an exception;
+- **sensitive** — fails when any promised output or effect is removed or corrupted;
+- **isolated** — controls its own inputs and does not depend on test order or shared mutable state;
+- **deterministic** — controls time, randomness, concurrency, and external dependencies where necessary;
+- **readable** — makes setup, action, and expected outcome apparent;
+- **focused** — diagnoses one behavior or scenario while allowing all assertions needed to prove it; and
+- **maintainable** — depends on public behavior and boundary contracts, not irrelevant implementation choices.
 
 ## Code Coverage Above 80%
 
@@ -342,7 +376,7 @@ go test -cover ./...
 
 Coverage gates are enforced in CI where CI exists, and checked manually before merging where it doesn't. A PR that drops coverage below 80% must either add tests or explicitly justify why the uncovered code cannot be meaningfully tested.
 
-Untestable code (system calls, hardware interfaces, platform-specific paths) is still covered indirectly through the Fake implementations in integration tests. The Fake exists precisely to make I/O-bound code testable without real external dependencies.
+Fakes make consumer behavior testable without real external dependencies, but they do not cover production adapters. System calls, hardware interfaces, platform-specific paths, and third-party protocols require focused integration or contract tests in an appropriate environment. If such a test cannot run in the normal suite, document where and how it runs rather than claiming Fake coverage as a substitute.
 
 # Related
 

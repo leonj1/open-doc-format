@@ -57,6 +57,13 @@ They never make I/O calls directly. Route classes use object names such as
 - Go: return `(value, error)`. TypeScript: use discriminated unions. Python: return union types.
 - Exceptions are for truly unrecoverable situations only. Never use try/catch as control flow.
 
+### Quality Tests
+Tests must prove exact results, state changes, boundary payloads, and prohibited
+side effects. A success flag alone is insufficient. Assertions on Fake state,
+serialized boundary requests, and collaborator cardinality or ordering are required
+when those facts are part of the behavior or boundary contract. Do not assert
+private methods or incidental internal call structure.
+
 ```
 Request → Route → Service → Client (I/O interface) → External World
 ```

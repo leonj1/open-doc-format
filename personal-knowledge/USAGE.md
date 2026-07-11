@@ -150,6 +150,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 - Functions return values — never mutate incoming arguments
 - No static classes or properties — everything is an instance
 - Result types over exceptions — never use exceptions for control flow
+- Quality tests prove exact results, state changes, boundary payloads, and prohibited side effects; a success flag alone is insufficient
 - Classes <700 lines, functions <30 lines, max 2 indentations
 - Routes and endpoints never make I/O calls — delegate to services only; route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`
 - Commit messages: FEAT/BUG/CHORE prefix, feature branches, main/master default
