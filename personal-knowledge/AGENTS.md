@@ -19,7 +19,17 @@ To fetch a single file without cloning:
 Every class that performs I/O (network, disk, database, HTTP) gets:
 - An interface
 - A production implementation
-- A Fake implementation (hand-written, used only in unit tests)
+- A Fake implementation (hand-written, stored under `tests/`, and used only in tests)
+
+The interface isolates application code from filesystem, database, device, and
+API contracts. When an external contract changes, keep the project-owned
+interface stable and update its production implementation in one place unless
+the application's required behavior also changes. Fakes exercise consumers of
+that interface without touching the real boundary; they do not test the
+production adapter. Use separate contract or integration tests for real-boundary
+behavior. Mocking frameworks are prohibited because configured expectations can
+mirror implementation details and produce false confidence; neither mocks nor
+Fakes guarantee correctness by themselves.
 
 ### Dependency Injection
 Constructor injection. No DI framework. Dependencies are explicit — passed
@@ -37,9 +47,10 @@ it is missing.
 - Functions: fewer than 30 lines
 - Indentation: max 2 levels (extract early if deeper)
 
-### Route Handler Discipline
-Route handlers in src/routes/ call services in src/services/ ONLY.
-Handlers never make I/O calls directly.
+### Route Discipline
+Routes and endpoints in src/routes/ call services in src/services/ ONLY.
+They never make I/O calls directly. Route classes use object names such as
+`HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
 
 ### Type Discipline
 - All function arguments must be strongly typed — no `any`, no untyped params.
@@ -56,8 +67,15 @@ Handlers never make I/O calls directly.
 - Go: return `(value, error)`. TypeScript: use discriminated unions. Python: return union types.
 - Exceptions are for truly unrecoverable situations only. Never use try/catch as control flow.
 
+### Quality Tests
+Tests must prove exact results, state changes, boundary payloads, and prohibited
+side effects. A success flag alone is insufficient. Assertions on Fake state,
+serialized boundary requests, and collaborator cardinality or ordering are required
+when those facts are part of the behavior or boundary contract. Do not assert
+private methods or incidental internal call structure.
+
 ```
-Request → Route Handler → Service → Client (I/O interface) → External World
+Request → Route → Service → Client (I/O interface) → External World
 ```
 
 ### Project Layout
@@ -67,11 +85,13 @@ project/
 │   ├── services/      # Business logic
 │   ├── clients/       # External API clients, DB connectors
 │   ├── models/        # Types, schemas, entities
-│   └── routes/        # HTTP handlers (thin, delegates to services)
-└── tests/             # Tests only; top-level sibling to src/
+│   └── routes/        # HTTP routes and endpoints (thin, delegates to services)
+└── tests/             # Tests and test-support code, including all Fakes
 ```
-Production source belongs only in `src/`; tests belong only in `tests/`. Never
-co-locate test files and source files, even when the language commonly does so.
+Production source belongs only in `src/`; tests and test-support code belong only
+in `tests/`. Every Fake class must reside under `tests/`, never under `src/` or
+beside its production implementation. Never co-locate test files and production
+source files, even when the language commonly does so.
 
 ### Naming
 Classes = nouns. Functions = verbs. Top-level classes short (Report),

@@ -4,12 +4,12 @@ title: Elegant Objects (Yegor Bugayenko)
 description: The 23 practical OOP recommendations from Yegor Bugayenko's "Elegant Objects" (Volume 1, 2017) — covering construction, encapsulation, immutability, method design, error handling, and class design.
 resource: https://www.yegor256.com/elegant-objects.html
 tags: [reference, book, oop, object-oriented, design, immutability, encapsulation, java]
-timestamp: 2026-06-20T00:00:00Z
+timestamp: 2026-07-11T00:00:00Z
 ---
 
 *Elegant Objects* (Volume 1, version 1.5, April 28, 2017) by Yegor Bugayenko is a book of 23 practical recommendations for object-oriented programmers. Most run against mainstream advice — it argues that static methods, NULL references, getters, setters, and mutable classes are harmful. The summary below captures the book's top-level recommendations; examples in the book are in Java.
 
-I treat these as **applied conventions** — agents writing code in my projects should follow them (wired into the Key Rules in [USAGE.md](/USAGE.md)). Several already align with [my code conventions](/conventions/code-structure.md) — immutability, no static members, constructor injection, fakes over mocks, and avoiding NULL.
+I treat these as **applied conventions**, except where an explicit project convention overrides the book. Agents writing code in my projects should follow the local adaptations identified below (wired into the Key Rules in [USAGE.md](/USAGE.md)). Several recommendations align with [my code conventions](/conventions/code-structure.md) — immutability, no static members, constructor injection, fakes over mocks, and avoiding NULL.
 
 # The 23 Recommendations
 
@@ -17,7 +17,7 @@ I treat these as **applied conventions** — agents writing code in my projects 
 
 | # | Recommendation | Gist |
 |---|----------------|------|
-| 1.1 | **Never use -er names** | Name classes after *what they are*, not what they do. Avoid `Manager`, `Controller`, `Helper`, `Validator`, `Parser` — they describe procedures, not objects. |
+| 1.1 | **Never use action or role names ending in -er/-or** | Name classes after *what they are*, not what they do. Avoid `Handler`, `Manager`, `Controller`, `Helper`, `Validator`, and `Parser` — they describe procedures or roles, not objects. Use object names such as `HttpRoute` or `OrderEndpoint`; verbs such as `handle()` belong on methods. |
 | 1.2 | **Make one constructor primary** | Have a single "primary" constructor that initializes all fields; all "secondary" constructors delegate to it. Place the primary one last. |
 | 1.3 | **Keep constructors code-free** | Constructors should only assign arguments to fields — no computation, parsing, or I/O. Do real work lazily, when the object is used. |
 
@@ -52,14 +52,14 @@ I treat these as **applied conventions** — agents writing code in my projects 
 | # | Recommendation | Gist |
 |---|----------------|------|
 | 4.1 | **Never return NULL** | Returning NULL forces callers into defensive checks. Return an object, an empty collection, or a null-object instead. |
-| 4.2 | **Throw only checked exceptions** | Use checked exceptions, don't catch unless you can recover, always chain exceptions, recover only once, and one exception type is usually enough. |
+| 4.2 | **Use Result values instead of exceptions for control flow (local override)** | The book recommends checked exceptions. This bundle intentionally overrides that advice: return a tagged `Result`/`Either` value for expected failures and business outcomes. Callers inspect the Result's success/error tag, never a concrete error type. Exceptions are reserved for truly unrecoverable failures and must not drive control flow. |
 | 4.3 | **Be either final or abstract** | A class should be `final` (no inheritance) or `abstract` (only inheritance) — never something in between. Composition over implementation inheritance. |
 | 4.4 | **Use RAII** | Resource Acquisition Is Initialization — tie resource lifecycle to object lifecycle so resources are released deterministically (e.g. `try-with-resources` / `Closeable`). |
 
 # Related
 
-- [Code Structure and Patterns](/conventions/code-structure.md) — my conventions overlap with 2.6 (immutable), 2.8 (fakes not mocks), 3.2 (no static), 3.6 (constructor injection), and 4.1 (no NULL via Result types).
-- [Naming Conventions](/conventions/naming.md) — relates to 1.1 (never -er names) and 2.4 (method naming).
+- [Code Structure and Patterns](/conventions/code-structure.md) — my conventions overlap with 2.6 (immutable), 2.8 (fakes not mocks), 3.2 (no static), 3.6 (constructor injection), and 4.1 (no NULL via Result types), and explicitly override 4.2 by requiring Result values for expected failures.
+- [Naming Conventions](/conventions/naming.md) — applies 1.1 (never action or role class names ending in -er/-or) and 2.4 (method naming).
 
 # Citations
 

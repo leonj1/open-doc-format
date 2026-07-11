@@ -1,9 +1,9 @@
 ---
 type: Convention
 title: Configuration Management
-description: How I handle config files, environment variables, credentials, and required configuration values across local, staging, and production environments.
+description: How I handle config files, environment variables, credentials, required configuration values, and explicit function arguments across local, staging, and production environments.
 tags: [conventions, configuration, secrets, environment, no-fallbacks]
-timestamp: 2026-06-23T02:38:59Z
+timestamp: 2026-07-11T00:00:00Z
 ---
 
 # Three-Tier Configuration Strategy
@@ -20,7 +20,18 @@ timestamp: 2026-06-23T02:38:59Z
 - **Environment variables** for production secrets because they're injected by the platform (Vercel, Railway, Docker), not stored in the repo.
 - **`.env` files** for local convenience because copying secrets from a password manager into env vars on every shell session is friction I don't need.
 
-# Required Values Have No Implicit Defaults
+# Function Arguments Never Have Defaults
+
+Every function parameter is required. Function signatures must not declare default argument values, infer omitted arguments, or make arguments optional as a substitute for requiring the caller to choose a value. Every caller must explicitly pass every argument at every call site.
+
+| Good | Bad |
+|------|-----|
+| `connect(host, port, timeout)` | `connect(host, port=5432, timeout=30)` |
+| `connect(host="db.internal", port=5432, timeout=30)` | `connect(host="db.internal")` |
+
+This rule applies even when one value is commonly used. Repetition at call sites is intentional because it keeps each caller's choice visible.
+
+# Configuration Values Have No Implicit Fallbacks
 
 When code is told to read a value from a specific configuration source, it must read that source only unless a fallback is explicitly specified.
 

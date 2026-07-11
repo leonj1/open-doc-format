@@ -1,14 +1,16 @@
 ---
 type: Convention
 title: Docker and Container Strategy
-description: Dockerfiles are the default for running projects — on Railway, locally, and anywhere else. The only exception is filesystem access.
+description: Dockerfiles are the default build definition for projects on Railway, locally, and anywhere else that supports containers.
 tags: [deployment, docker, containers, local-dev]
-timestamp: 2026-06-19T00:00:00Z
+timestamp: 2026-07-11T00:00:00Z
 ---
 
-# Default: Always Docker
+# Default: Dockerfile
 
 I use a `Dockerfile` to build and run projects by default. The primary motivation is **removing local dependency problems** — no "works on my machine" issues, no language runtime version mismatches, no OS-level library conflicts.
+
+The Dockerfile is the authoritative build recipe. A hosted platform must use it whenever that platform supports container builds; automatic platform build detection does not replace it.
 
 # Where Dockerfiles Run
 
@@ -18,9 +20,11 @@ I use a `Dockerfile` to build and run projects by default. The primary motivatio
 | **Local** | `docker build` and `docker run` — same image, same behavior as production. |
 | **Home lab** | Same Docker image, deployed to local Docker host or Proxmox. |
 
-# The Exception: Filesystem Access
+# Exceptions
 
-I omit the Dockerfile only when the project requires **direct access to the host filesystem** — reading local files, writing to mounted directories, or interacting with devices. Docker's filesystem abstraction gets in the way in those cases, so I run directly on the host.
+I may omit the Dockerfile when the project requires **direct access to the host filesystem** — reading local files, writing to mounted directories, or interacting with devices. Docker's filesystem abstraction gets in the way in those cases, so I run directly on the host.
+
+A deployment target that cannot build or run containers may also require its native build system. Either exception must be explicit in the repository documentation. Dockerfile remains the default and must not be omitted merely because a platform offers automatic build detection.
 
 # No Image Registry
 

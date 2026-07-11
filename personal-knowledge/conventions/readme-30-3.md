@@ -3,7 +3,7 @@ type: Convention
 title: README 30-3 Rule
 description: Every project README must convey what the project is in 30 seconds and how to get it running in 3 minutes.
 tags: [conventions, documentation, readme, onboarding]
-timestamp: "2026-06-20T02:21:28Z"
+timestamp: "2026-07-11T00:00:00Z"
 ---
 
 # Rule
@@ -54,7 +54,7 @@ npm start          # or the appropriate run command
 
 Rules for the 3-minute section:
 
-- **Every command must work verbatim.** No `$EDITOR`, no `configure X to your environment` without a concrete default.
+- **Every command must work verbatim.** No `$EDITOR` and no unresolved `configure X to your environment` step. Commands must explicitly supply every required value.
 - **Assume a clean machine.** If a dependency isn't in the commands, it doesn't exist. List prerequisites explicitly.
 - **End with visible output.** The user should see something working — a running server, a test passing, a CLI printing help text.
 - **One code block.** Copy-paste, hit enter, see results. Split into separate blocks only if there are genuinely separate steps (e.g., "install deps" then "start server").
@@ -88,7 +88,7 @@ curl http://localhost:3000/health
 |-------|---------|
 | Walls of text before any code | Lead with the 30-second block, then code |
 | "Installation" buried in a docs site | Self-contained in README |
-| Configuration that requires reading source | Sensible defaults, `.env.example`, or a setup script |
+| Configuration that requires reading source | Document every required value and supply it explicitly through `.env.example`, command arguments, or a setup script |
 | "See CONTRIBUTING.md for dev setup" | The 3-minute section IS the dev setup |
 | Screenshots of CLI output | Use code blocks — they're searchable and copyable |
 | Table of contents as the first thing | 30-second section first, TOC after if needed |
@@ -101,3 +101,4 @@ The README for `open-doc-format` follows this rule. The 30-second section explai
 
 - [/conventions/project-structure.md](/conventions/project-structure.md) — Where README.md lives in the directory tree
 - [/conventions/naming.md](/conventions/naming.md) — Naming conventions apply to project names in README titles
+- [/conventions/configuration.md](/conventions/configuration.md) — Function calls require every argument explicitly; README examples must not rely on default argument values

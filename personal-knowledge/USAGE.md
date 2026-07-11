@@ -143,17 +143,18 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 
 ## Key Rules
 
-- Every I/O class gets an interface + production impl + Fake impl for tests
+- Every I/O class gets a stable project-owned interface + production impl + Fake impl stored under tests/; external contract changes stay in the production adapter, while Fakes test consumers without claiming to test the real boundary
 - Constructor-based dependency injection — no DI framework
 - Implement logic exactly as specified — no default values, alternate sources, or fallback paths unless explicitly requested
 - All function arguments strongly typed — prefer typed objects over primitives
 - Functions return values — never mutate incoming arguments
 - No static classes or properties — everything is an instance
 - Result types over exceptions — never use exceptions for control flow
+- Quality tests prove exact results, state changes, boundary payloads, and prohibited side effects; a success flag alone is insufficient
 - Classes <700 lines, functions <30 lines, max 2 indentations
-- Route handlers never make I/O calls — delegate to services only
+- Routes and endpoints never make I/O calls — delegate to services only; route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`
 - Commit messages: FEAT/BUG/CHORE prefix, feature branches, main/master default
-- Project layout: production source only in src/; tests only in a separate top-level tests/ directory; never co-locate source and test files
+- Project layout: production source only in src/; tests, test-support code, and every Fake only in a separate top-level tests/ directory; never co-locate production and test code
 - TypeScript for AI/LLM backends, Python for extensibility, Go for static binaries
 - Dockerfiles by default, docker-compose for multi-container
 - make build, make test, make start, make stop, make restart
