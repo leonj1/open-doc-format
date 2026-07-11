@@ -28,8 +28,8 @@ Personal software development practices, home lab infrastructure, network topolo
 ## Deployment
 
 * [Deployment Strategy](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/strategy.md) — Vercel, Railway, or local
-* [CI/CD and Triggers](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/ci-cd.md) — Git webhook on commit = deploy
-* [Docker and Containers](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/docker.md) — Dockerfiles are the default
+* [CI/CD and Triggers](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/ci-cd.md) — Dockerfile-first builds; git webhook on commit = deploy
+* [Docker and Containers](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/docker.md) — Dockerfiles are the default build definition wherever containers are supported
 * [Secrets Management](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/secrets.md) — Platform dashboard env vars
 * [Local Development Loop](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/local-dev-loop.md) — Docker Compose + Makefile
 * [Devboxer Deployments](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/deployment/devboxer-deployments.md) — Railway via API token
