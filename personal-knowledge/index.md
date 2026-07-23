@@ -37,6 +37,7 @@ Personal software development practices, home lab infrastructure, network topolo
 ## References
 
 * [Elegant Objects (Yegor Bugayenko)](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/references/elegant-objects.md) — The 23 practical OOP recommendations from the book (Volume 1, 2017)
+* [I Have ADHD — ADHD-Friendly AI Output Style](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/references/i-have-adhd.md) — Action-first response rules for Claude Code, Codex, and Cursor
 
 ## Home Lab
 

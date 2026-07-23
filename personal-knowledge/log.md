@@ -1,5 +1,8 @@
 # Personal Knowledge — Update Log
 
+## 2026-07-23
+* **Creation**: Added [I Have ADHD — ADHD-Friendly AI Output Style](/references/i-have-adhd.md), documenting the skill's action-first response model, ten rules, safety and ambiguity exceptions, installation paths, and customization workflow.
+
 ## 2026-07-11
 * **Update**: [Code Structure and Patterns](/conventions/code-structure.md) now defines interfaces as stable, project-owned abstractions around external boundaries. Fakes test consumer behavior without touching or claiming to verify the real boundary; production adapters use separate contract or integration tests. The guidance also explains why hand-written Fakes are preferred over configurable mocking frameworks without claiming that either guarantees correctness.
 
