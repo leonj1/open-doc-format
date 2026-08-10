@@ -29,8 +29,6 @@ I use [Zed](https://zed.dev) when I want a fast, beautiful editor. It's not my d
 3. The AI works on the codebase and produces a **GitHub pull request** as its output.
 4. I review and merge the PR — the code never touches my local machine.
 
-Recently I connected Devboxer to my Railway credentials, so it can also **manage deployments directly** — creating, updating, and monitoring services on Railway without me touching a terminal.
-
 **When I use it:** When I need to get something done remotely, without my own IDE or machines, or when I want an AI agent to do the heavy lifting and I just review the PR.
 
 ## 4. Telegram — Codebase Exploration and Light Coding

@@ -17,7 +17,7 @@ timestamp: 2026-07-11T00:00:00Z
 # Rationale
 
 - **Config files** for non-sensitive, environment-differentiated settings. A `production.properties` vs `development.properties` is fine.
-- **Environment variables** for production secrets because they're injected by the platform (Vercel, Railway, Docker), not stored in the repo.
+- **Environment variables** for production secrets because they're injected by the platform (Vercel, Docker), not stored in the repo.
 - **`.env` files** for local convenience because copying secrets from a password manager into env vars on every shell session is friction I don't need.
 
 # Function Arguments Never Have Defaults

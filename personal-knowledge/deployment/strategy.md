@@ -1,8 +1,8 @@
 ---
 type: Workflow
 title: Deployment Strategy
-description: Decision framework for where to deploy — Vercel, Railway, or local — and when authentication gets added.
-tags: [deployment, vercel, railway, local, clerk, auth, domains]
+description: Decision framework for where to deploy — Vercel or local — and when authentication gets added.
+tags: [deployment, vercel, local, clerk, auth, domains]
 timestamp: 2026-06-19T00:00:00Z
 ---
 
@@ -11,7 +11,6 @@ timestamp: 2026-06-19T00:00:00Z
 | Project type | Platform | Why |
 |-------------|----------|-----|
 | **Static websites** | [Vercel](https://vercel.com) | Optimized for frontend — instant deploys, edge CDN, preview URLs per branch. |
-| **Backend services** | [Railway](https://railway.app) | Simple container-based platform — give it a repo or Dockerfile, it builds and runs. Less platform lock-in than serverless. |
 | **Local-only projects** | Local machine or home lab | When the project only ever needs to be available locally — internal tools, experiments, home automation. |
 
 # The Authentication Boundary
