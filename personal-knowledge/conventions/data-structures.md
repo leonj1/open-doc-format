@@ -42,7 +42,7 @@ Match the problem signal to the structure. The third column is the payoff — th
 |----------------|-----------|------------------------------|
 | "Take the next item by priority / earliest deadline / cheapest cost" | **Priority queue / heap** | Consuming items out of priority order; forgotten re-sorts |
 | "Most recently added is handled first" (undo, parsing, nesting, backtracking) | **Stack** | Reading or removing from the middle; corrupted nesting |
-| "First in, first out" (job processing, message passing, BFS) | **Queue / deque** | Starvation and reordering; index-juggling on a list |
+| "First in, first out" (job processing, message passing, BFS) | **Queue / deque** | Arbitrary reordering of accepted items; index-juggling on a list |
 | "Each element appears at most once" / "have I seen this?" | **Set** | Duplicates; O(n) `contains` scans over a list |
 | "Unique elements, iterated in sorted order / range queries" | **Sorted set / tree map** | Unsorted iteration; sort-on-every-read |
 | "How many of each?" | **Counter / multiset** | Hand-rolled `map[key] = (map[key] ?? 0) + 1` with missing-key bugs |
@@ -84,7 +84,9 @@ type FetchState =
 // Bad — any string stores fine, including "actve"
 type Order struct{ Status string }
 
-// Good — the type system rejects unknown states
+// Good — typed constants stop string mixing. Go still admits casts like
+// OrderStatus(99), so raw values entering the system go through a
+// validating constructor; only TS/Python enums close the type completely.
 type OrderStatus int
 
 const (
@@ -92,6 +94,18 @@ const (
     OrderActive
     OrderDone
 )
+
+func ParseOrderStatus(raw string) (OrderStatus, error) {
+    switch raw {
+    case "pending":
+        return OrderPending, nil
+    case "active":
+        return OrderActive, nil
+    case "done":
+        return OrderDone, nil
+    }
+    return OrderPending, fmt.Errorf("unknown order status %q", raw)
+}
 
 type Order struct{ Status OrderStatus }
 ```
@@ -120,7 +134,9 @@ const pendingJobs: Job[] = [];   // NOTE: keep sorted by deadline!
 pendingJobs.push(job);           // invariant silently broken
 pendingJobs.sort(byDeadline);    // every consumer must remember this
 
-// Good — the structure cannot yield jobs out of deadline order
+// Good — the structure cannot yield jobs out of deadline order.
+// PriorityQueue is a domain wrapper you own, like the PendingJobs
+// class defined in the next section.
 const pendingJobs = new PriorityQueue<Job>(byDeadline);
 pendingJobs.enqueue(job);
 const next = pendingJobs.dequeue();  // always the earliest deadline
