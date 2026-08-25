@@ -57,6 +57,25 @@ They never make I/O calls directly. Route classes use object names such as
 - Prefer typed objects over primitives — `EmailAddress` not `string`, `CustomerId` not `number`.
 - Functions return values — never mutate incoming arguments. Return new state.
 
+### Choosing Data Structures
+- Never default to a list/array or map/dict. First enumerate the operations the
+  code performs and the invariants ("this structure is corrupt if ever ..."),
+  then pick the most constrained structure that makes those invalid states
+  unrepresentable: priority queue for take-next-by-priority, stack for LIFO,
+  queue/deque for FIFO, set for uniqueness, counter for tallies, ring buffer
+  for bounded recent history.
+- Model fixed state sets as enums and mutually exclusive modes as tagged
+  unions — never magic strings or combinable boolean flags.
+- Values that travel together live in one record — never parallel collections.
+- If the language lacks the structure, wrap the raw list/map in a domain class
+  (e.g. `PendingJobs`, not `JobHeap`) that exposes only valid operations and
+  keeps the raw structure private.
+- A plain list or map is acceptable only when there are genuinely no
+  invariants; justify the choice in one sentence in the commit/PR description.
+- `sort()` before every read, `contains()` before every insert, or a "keep
+  these in sync" comment means the structure is too permissive — replace the
+  structure instead of adding discipline.
+
 ### No Static Classes or Properties
 - Every dependency is an instance passed through a constructor. No static methods.
 - The only exception: a `main` entry point if the language requires it.
