@@ -1,5 +1,6 @@
 # Concepts
 
+* [Choosing Data Structures](data-structures.md) — Pick the most constrained structure whose operations match the problem; lists and maps are permissive last resorts that allow invalid states to be saved.
 * [Code Structure and Patterns](code-structure.md) — Stable I/O interfaces isolate external contract changes; Fakes under tests/ exercise consumers without replacing real-boundary tests; quality tests prove behavior, contracts, errors, and side effects.
 * [Configuration Management](configuration.md) — How I handle config files, environment variables, credentials, explicit function arguments, and required values without implicit fallbacks.
 * [Dependencies and Default Libraries](dependencies.md) — Always use latest library versions with pinned lockfiles. Vendoring for Go. Go defaults: mux and zerolog. For other languages, follow industry standards.

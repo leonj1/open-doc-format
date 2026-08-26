@@ -1,5 +1,9 @@
 # Personal Knowledge — Update Log
 
+## 2026-08-25
+* **Creation**: Documented [Choosing Data Structures](/conventions/data-structures.md) — a decision framework (operations first, then invariants), a problem-signal → structure selection table, make-invalid-states-unrepresentable patterns (tagged unions over boolean flags, enums over magic strings, records over parallel lists), domain wrappers when the language lacks a structure, standard-library-first guidance, and explicit instructions for AI coding agents to justify any plain list or map.
+* **Update**: Promoted the data-structure rules into the inlined Key Rules in [AGENTS.md](/AGENTS.md), [CLAUDE.md](/CLAUDE.md), and the Droid skill snippet in [USAGE.md](/USAGE.md), and added the concept to the Pi contextFiles list and the GitHub API path table, so agents apply the rules when writing code without fetching the full document.
+
 ## 2026-07-23
 * **Creation**: Added [I Have ADHD — ADHD-Friendly AI Output Style](/references/i-have-adhd.md), documenting the skill's action-first response model, ten rules, safety and ambiguity exceptions, installation paths, and customization workflow.
 

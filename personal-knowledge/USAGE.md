@@ -101,6 +101,7 @@ After cloning to `~/src/open-doc-format/`:
 {
   "contextFiles": [
     "~/src/open-doc-format/personal-knowledge/conventions/code-structure.md",
+    "~/src/open-doc-format/personal-knowledge/conventions/data-structures.md",
     "~/src/open-doc-format/personal-knowledge/conventions/project-structure.md",
     "~/src/open-doc-format/personal-knowledge/conventions/naming.md",
     "~/src/open-doc-format/personal-knowledge/conventions/git-commits.md",
@@ -148,6 +149,7 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 - Implement logic exactly as specified — no default values, alternate sources, or fallback paths unless explicitly requested
 - All function arguments strongly typed — prefer typed objects over primitives
 - Functions return values — never mutate incoming arguments
+- Never default to lists/maps — pick the most constrained structure whose operations match the problem (priority queue, stack, queue, set, counter, ring buffer); enums/tagged unions over magic strings and boolean flags; wrap raw structures in domain classes; a plain list or map requires a stated justification (full guidance: conventions/data-structures.md)
 - No static classes or properties — everything is an instance
 - Result types over exceptions — never use exceptions for control flow
 - Quality tests prove exact results, state changes, boundary payloads, and prohibited side effects; a success flag alone is insufficient
@@ -180,6 +182,7 @@ These paths work with `gh api repos/leonj1/open-doc-format/contents/<path>`:
 | AGENTS | `personal-knowledge/AGENTS.md` |
 | CLAUDE | `personal-knowledge/CLAUDE.md` |
 | Code Structure | `personal-knowledge/conventions/code-structure.md` |
+| Data Structures | `personal-knowledge/conventions/data-structures.md` |
 | Project Structure | `personal-knowledge/conventions/project-structure.md` |
 | Naming | `personal-knowledge/conventions/naming.md` |
 | Languages | `personal-knowledge/conventions/languages.md` |
