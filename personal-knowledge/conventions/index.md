@@ -8,4 +8,5 @@
 * [Language Preferences](languages.md) — Which programming languages I use and the decision framework for choosing one over another.
 * [Naming Conventions](naming.md) — Elegant Objects class names: name what an object is, prohibit action or role names ending in -er/-or, and use verbs for functions.
 * [Project Structure](project-structure.md) — Standard backend layout with production source in src/ and tests, test-support code, and all Fake classes in tests/.
+* [ReactJS Component Authoring](react-components.md) — React components stay within 700 total lines, own only their component function, import all other functions, and decompose long JSX into independent components.
 * [README 30-3 Rule](readme-30-3.md) — Every project README must convey what the project is in 30 seconds and how to get it running in 3 minutes.

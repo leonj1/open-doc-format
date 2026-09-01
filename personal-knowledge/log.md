@@ -1,5 +1,8 @@
 # Personal Knowledge — Update Log
 
+## 2026-09-01
+* **Creation**: Added [ReactJS Component Authoring](/conventions/react-components.md) — component files are limited to 700 total lines, own only their component function, import every other function from its own file, and decompose long JSX into independent components.
+
 ## 2026-08-25
 * **Creation**: Documented [Choosing Data Structures](/conventions/data-structures.md) — a decision framework (operations first, then invariants), a problem-signal → structure selection table, make-invalid-states-unrepresentable patterns (tagged unions over boolean flags, enums over magic strings, records over parallel lists), domain wrappers when the language lacks a structure, standard-library-first guidance, and explicit instructions for AI coding agents to justify any plain list or map.
 * **Update**: Promoted the data-structure rules into the inlined Key Rules in [AGENTS.md](/AGENTS.md), [CLAUDE.md](/CLAUDE.md), and the Droid skill snippet in [USAGE.md](/USAGE.md), and added the concept to the Pi contextFiles list and the GitHub API path table, so agents apply the rules when writing code without fetching the full document.

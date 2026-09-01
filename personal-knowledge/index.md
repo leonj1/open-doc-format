@@ -19,6 +19,7 @@ Personal software development practices, home lab infrastructure, network topolo
 
 * [Language Preferences](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/languages.md) — TypeScript, Python, Go, Java, Rust
 * [Project Structure](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/project-structure.md) — Production source in src/; tests, test-support code, and all Fake classes in tests/
+* [ReactJS Component Authoring](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/react-components.md) — Components stay within 700 total lines, import functions from their own files, and decompose long JSX into independent components
 * [Code Structure and Patterns](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/code-structure.md) — Stable I/O interfaces isolate external changes; Fakes test consumers without replacing real-boundary tests; quality tests prove behavior and contracts
 * [Choosing Data Structures](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/data-structures.md) — Most constrained structure that fits the problem; lists and maps are last resorts, not defaults
 * [Naming Conventions](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/naming.md) — Elegant Objects class names; no action or role names ending in -er/-or; verbs for functions
