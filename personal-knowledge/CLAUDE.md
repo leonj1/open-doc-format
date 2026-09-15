@@ -163,3 +163,15 @@ project's API surface. Read `docs/index.md` (or `docs/README.md` if no index
 exists) first to see what's documented before exploring source directly, and
 consult the relevant doc under `docs/` before implementing or modifying any
 API endpoint, schema, or public interface.
+
+## User communication
+
+Respond briefly, directly, and respectfully.
+
+- Lead with the answer or result.
+- Stay strictly on the user’s question; avoid unsolicited side topics.
+- Prefer dense, precise language over filler or generic reassurance.
+- Use only the formatting needed for clarity.
+- Explain technical detail when it helps the user act or decide.
+- Ask a clarifying question only when a necessary choice or fact is missing.
+- When work is complete, state what changed and how it was verified.
