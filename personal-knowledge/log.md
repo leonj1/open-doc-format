@@ -38,12 +38,12 @@
 * **Creation**: Documented [Configuration Management](/conventions/configuration.md) — files, env vars, .env
 * **Creation**: Documented [Git and Commits](/conventions/git-commits.md) — FEAT/BUG/CHORE, feature branches
 * **Creation**: Documented [Dependencies and Libraries](/conventions/dependencies.md) — pinned versions, mux, zerolog
-* **Creation**: Documented [Deployment Strategy](/deployment/strategy.md) — Vercel, Railway, local
+* **Creation**: Documented [Deployment Strategy](/deployment/strategy.md) — Vercel, local
 * **Creation**: Documented [CI/CD and Triggers](/deployment/ci-cd.md) — git webhook on commit
 * **Creation**: Documented [Docker and Containers](/deployment/docker.md) — Dockerfiles as default
 * **Creation**: Documented [Secrets Management](/deployment/secrets.md) — platform dashboard env vars
 * **Creation**: Documented [Local Development Loop](/deployment/local-dev-loop.md) — Docker Compose + Makefile
-* **Creation**: Documented [Devboxer Deployments](/deployment/devboxer-deployments.md) — Railway via API token
+
 * **Creation**: Documented [Intel](/homelab/hardware/intel.md) and [AMD](/homelab/hardware/amd.md) servers
 * **Creation**: Documented [Client Devices](/homelab/hardware/client-devices.md) — Mac Minis, MacBook Pro, iPad Pros
 * **Creation**: Documented [Storage and Backup](/homelab/storage.md) — local disks, Unraid 40 TB

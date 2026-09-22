@@ -136,7 +136,6 @@ Rare direct commits to main for quick fixes.
 
 ### Deployment Targets
 - Vercel: static sites and frontends
-- Railway: backends and services
 - Full deployment docs: ~/src/open-doc-format/personal-knowledge/deployment/
 
 ### Docker and Dev Loop

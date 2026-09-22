@@ -194,7 +194,6 @@ These paths work with `gh api repos/leonj1/open-doc-format/contents/<path>`:
 | Docker | `personal-knowledge/deployment/docker.md` |
 | Secrets | `personal-knowledge/deployment/secrets.md` |
 | Local Dev Loop | `personal-knowledge/deployment/local-dev-loop.md` |
-| Devboxer Deployments | `personal-knowledge/deployment/devboxer-deployments.md` |
 | Coding Modalities | `personal-knowledge/tools/coding-modalities.md` |
 | CLI Tools | `personal-knowledge/tools/cli-tools.md` |
 | Dotfiles | `personal-knowledge/tools/dotfiles.md` |
