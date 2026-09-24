@@ -29,7 +29,7 @@ project/
 | `src/services/` | Business logic and domain services — the core of the application. Orchestrates clients and models. |
 | `src/clients/` | External API clients, SDK wrappers, database connectors. Anything that talks to the outside world. |
 | `src/models/` | Data models, TypeScript interfaces/types, Python dataclasses, Go structs, schemas, entities. |
-| `src/routes/` | HTTP routes, endpoints, and API route definitions. Route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`. Thin — delegates to services. |
+| `src/routes/` | HTTP routes, endpoints, and API route definitions. Route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`. Thin — delegates to services. Route files contain route classes only; helpers go to `services/` or `clients/`, and response/error handling goes to middleware. |
 
 # Test Placement
 

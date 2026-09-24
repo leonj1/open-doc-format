@@ -1,8 +1,8 @@
 ---
 type: Convention
 title: Code Structure and Patterns
-description: How I structure code — I/O interfaces with Fakes under tests/, dependency injection, no implicit fallbacks, type discipline, immutability, Result types, functional BDD testing, size limits, and route/service/I/O separation.
-tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks]
+description: How I structure code — I/O interfaces with Fakes under tests/, dependency injection, no implicit fallbacks, type discipline, immutability, Result types, functional BDD testing, size limits, and route/service/I/O separation with middleware-owned responses and helper-free route files.
+tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks, routes, middleware, rest]
 timestamp: 2026-07-11T00:00:00Z
 ---
 
@@ -110,7 +110,7 @@ When a required input is absent, fail clearly through the project's normal error
 Routes and endpoints in `src/routes/` have **one job**: call services in `src/services/`. They never perform I/O directly. Route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
 
 ```
-Request → Route → Service → Client (I/O interface) → External World
+Request → Middleware → Route → Service → Client (I/O interface) → External World
 ```
 
 | Good (route) | Bad (route) |
@@ -118,13 +118,117 @@ Request → Route → Service → Client (I/O interface) → External World
 | `orderService.placeOrder(req.body)` | `fetch("https://api.example.com/...")` |
 | `userService.getById(req.params.id)` | `db.query("SELECT * FROM users WHERE...")` |
 
-The route translates HTTP concerns (request parsing, response formatting, status codes) into service calls. The service handles business logic. The client (behind an interface) handles I/O.
+The route turns an already-parsed request into a single service call and returns the service's `Result`. Middleware owns the HTTP concerns around it: parsing and validating input on the way in, mapping the `Result` to a status code and payload on the way out. The service handles business logic. The client (behind an interface) handles I/O.
+
+## No try/catch as a Response Path
+
+A route must not contain `try`/`catch` (or `except`, `recover`) blocks that decide which HTTP response to send. That is exception-driven control flow, which this convention already forbids for services, and it bloats every route with the same boilerplate. Two rules follow:
+
+1. **Services return `Result` values.** The route returns that `Result` as-is. It never catches a domain error and never branches on the tag to pick a status code.
+2. **Middleware owns the unexpected.** A single error middleware, registered once at the application edge, converts anything that actually throws (a bug, a dropped connection, an exhausted pool) into the standard 500 payload and logs it. Routes do not duplicate that job.
+
+```typescript
+// Bad — try/catch chooses the response
+class OrderEndpoint {
+  constructor(private readonly orders: OrderService) {}
+
+  async post(req: Request, res: Response): Promise<void> {
+    try {
+      const order = await this.orders.placeOrder(req.body);
+      res.status(201).json(order);
+    } catch (e) {
+      if (e instanceof ValidationError) { res.status(400).json({ error: e.message }); return; }
+      if (e instanceof NotFoundError)   { res.status(404).json({ error: e.message }); return; }
+      res.status(500).json({ error: "internal" });
+    }
+  }
+}
+```
+
+```typescript
+// Good — service returns Result; middleware renders it
+class OrderEndpoint {
+  constructor(private readonly orders: OrderService) {}
+
+  async post(req: Request): Promise<Result<Order, OrderError>> {
+    return this.orders.placeOrder(req.body);
+  }
+}
+```
+
+The `Result` → HTTP mapping (`ValidationError` → 400, `NotFoundError` → 404, `Ok` → 200/201) lives in **one** response middleware, not in each route. Adding a new error kind means editing the mapping once. The route body shrinks to the service call and, at most, the request-to-input translation.
+
+## Middleware Handles Cross-Cutting Concerns
+
+Anything that applies to more than one route belongs in middleware, never in the route body:
+
+| Concern | Where it lives | Not in the route |
+|---------|----------------|------------------|
+| Auth / session lookup | auth middleware | `if (!req.headers.authorization) ...` |
+| Request body validation and parsing | validation middleware or a typed schema | manual field-by-field checks |
+| `Result` → status code + payload | response middleware | `res.status(...)` branching |
+| Thrown exceptions → 500 | error middleware | `try/catch` |
+| Logging, tracing, request IDs | logging middleware | `logger.info(...)` calls |
+| Rate limiting, CORS, compression | dedicated middleware | anything |
+
+Middleware is still code and follows every other rule here: it is a class with constructor-injected dependencies, it has an interface and a Fake where it does I/O, and it is tested through its public contract.
+
+## Route Files Contain Only Routes
+
+A file under `src/routes/` contains **route classes and nothing else**. No private helper functions, no module-level utilities, no inline data shaping, no formatters, no constants beyond the route's own path.
+
+| Belongs in a route file | Does not belong — move it |
+|-------------------------|---------------------------|
+| The route class | A `toDto(order)` helper → `src/services/` |
+| Its constructor with injected services | A `parseDateRange(query)` function → `src/services/` |
+| One method per HTTP verb it serves | Any `fetch`, SDK, or DB call → `src/clients/` |
+| | A `buildPaginationLinks(...)` function → `src/services/` |
+| | Retry, caching, or backoff logic → `src/clients/` |
+
+The test for whether something belongs: **if you deleted the framework, would this code still be needed?** If yes, it is business logic or I/O and lives in `src/services/` or `src/clients/`. If no, it is an HTTP concern and lives in middleware. Either way, it is not in the route file.
+
+```typescript
+// Bad — helper living beside the route
+function toSummary(order: Order): OrderSummary { /* ... */ }
+
+class OrderEndpoint {
+  constructor(private readonly orders: OrderService) {}
+  async get(req: Request): Promise<Result<OrderSummary, OrderError>> {
+    const result = await this.orders.findById(req.params.id);
+    return result.ok ? Ok(toSummary(result.value)) : result;
+  }
+}
+```
+
+```typescript
+// Good — the service returns the shape the route needs
+class OrderEndpoint {
+  constructor(private readonly orders: OrderService) {}
+  async get(req: Request): Promise<Result<OrderSummary, OrderError>> {
+    return this.orders.summaryById(req.params.id);
+  }
+}
+```
+
+A route class that needs a helper is a signal the service's interface is wrong, not a reason to add a private function. Fix the service.
+
+## Why This Matters
+
+Routes are the layer most likely to sprawl because every new requirement seems to "just need a small check here." Keeping them to a single service call with no branching, no helpers, and no exception handling means:
+
+- a route is read in seconds and rarely needs its own tests beyond wiring;
+- a bug in a response mapping is fixed in one middleware, not in forty routes;
+- services stay fully testable with Fakes because HTTP never leaks into them;
+- the route file's size stays flat as the API grows.
 
 # Request Flow
 
 ```
+Middleware
+  │ authenticates, validates and parses input
+  ▼
 Route
-  │ parses request, validates input
+  │ calls exactly one service method
   ▼
 Service
   │ orchestrates business logic
@@ -133,8 +237,9 @@ Service
 Client (ProductionIoCient or FakeIoCient)
   │ performs actual or fake I/O
   ▼
-Returns through the chain back to the route
-  │ route formats HTTP response
+Returns through the chain back to the route as a Result
+  │ response middleware maps Result → status code and payload
+  │ error middleware maps anything thrown → 500
   ▼
 Response to caller
 ```
