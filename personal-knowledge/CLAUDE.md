@@ -51,6 +51,9 @@ it is missing.
 Routes and endpoints in src/routes/ call services in src/services/ ONLY.
 They never make I/O calls directly. Route classes use object names such as
 `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
+Services never return, embed, or accept HTTP status codes — they return
+domain-named errors (`OutOfStock`), and one response middleware maps those
+to status codes.
 
 ### Type Discipline
 - All function arguments must be strongly typed — no `any`, no untyped params.
@@ -85,6 +88,7 @@ They never make I/O calls directly. Route classes use object names such as
 - Return a Result type (`{ ok: true, value } | { ok: false, error }`) if the language supports it.
 - Go: return `(value, error)`. TypeScript: use discriminated unions. Python: return union types.
 - Exceptions are for truly unrecoverable situations only. Never use try/catch as control flow.
+- Name error values after the domain fact that failed (`OutOfStock`), never after a transport outcome (`Conflict`, `status: 400`).
 
 ### Quality Tests
 Tests must prove exact results, state changes, boundary payloads, and prohibited

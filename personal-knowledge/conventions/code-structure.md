@@ -158,6 +158,47 @@ class OrderEndpoint {
 
 The `Result` → HTTP mapping (`ValidationError` → 400, `NotFoundError` → 404, `Ok` → 200/201) lives in **one** response middleware, not in each route. Adding a new error kind means editing the mapping once. The route body shrinks to the service call and, at most, the request-to-input translation.
 
+## Services Never Return HTTP Status Codes
+
+A service knows nothing about HTTP. It must not return, embed, or accept a status code, and its signatures must not mention HTTP at all:
+
+| Prohibited in `src/services/` | Instead |
+|-------------------------------|---------|
+| `return { status: 404, body: ... }` | `return Err(new OrderNotFound(id))` |
+| `Result<Order, { code: 400 }>` | `Result<Order, OrderError>` with domain-named error kinds |
+| `placeOrder(req: Request): Response` | `placeOrder(input: OrderInput): Result<Order, OrderError>` |
+| An error class carrying `httpStatus` | An error class carrying the domain fact that failed |
+
+```typescript
+// Bad — the service has picked a status code
+class OrderService {
+  async placeOrder(input: OrderInput): Promise<Result<Order, { status: number; message: string }>> {
+    const stock = await this.inventory.reserve(input.sku, input.quantity);
+    if (!stock.ok) return Err({ status: 409, message: "out of stock" });
+    return Ok(await this.orders.save(input));
+  }
+}
+```
+
+```typescript
+// Good — the service returns a domain error; middleware decides the status
+type OrderError =
+  | { kind: "OutOfStock"; sku: Sku }
+  | { kind: "PaymentDeclined"; reason: DeclineReason };
+
+class OrderService {
+  async placeOrder(input: OrderInput): Promise<Result<Order, OrderError>> {
+    const stock = await this.inventory.reserve(input.sku, input.quantity);
+    if (!stock.ok) return Err({ kind: "OutOfStock", sku: input.sku });
+    return Ok(await this.orders.save(input));
+  }
+}
+```
+
+Two reasons. First, the same service is called from places where a status code is meaningless — a CLI command, a queue consumer, a scheduled job, another service, a test. `409` tells those callers nothing; `OutOfStock` tells them what happened. Second, a status code chosen inside a service is a second copy of the `Result` → HTTP mapping, so the mapping is no longer in one place, and changing `OutOfStock` from `409` to `422` means auditing every service instead of editing one middleware.
+
+The same rule applies in reverse: a service accepts domain input types, never the framework's request object, and never sets headers, cookies, or response bodies. Everything HTTP-shaped enters and leaves through `src/routes/` and its middleware.
+
 ## Middleware Handles Cross-Cutting Concerns
 
 Anything that applies to more than one route belongs in middleware, never in the route body:
@@ -359,6 +400,8 @@ Exceptions must not be used as a control flow mechanism:
 | Return a Result/Either | `throw` / `raise` for business rule violations |
 
 The caller should inspect the Result's explicit success/error tag, not inspect the concrete type of its value and not wrap calls in try/catch for expected outcomes. An uncaught exception means something broke that shouldn't have — not "the user wasn't found."
+
+Error values are named after the domain fact that failed (`OutOfStock`, `PaymentDeclined`), never after a transport outcome (`Conflict`, `BadRequest`, `status: 400`). See [Services Never Return HTTP Status Codes](#services-never-return-http-status-codes).
 
 # Testing Philosophy
 

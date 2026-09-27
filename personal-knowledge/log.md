@@ -1,5 +1,8 @@
 # Personal Knowledge — Update Log
 
+## 2026-09-27
+* **Update**: [Code Structure and Patterns](/conventions/code-structure.md) now states that services never return HTTP status codes — no status fields, HTTP-named error kinds, or framework request/response objects in `src/services/` — because the same service is called from CLIs, queue consumers, and tests where a status code is meaningless, and because a status picked in a service duplicates the `Result` → HTTP mapping that belongs in one response middleware. Error values are named after the domain fact that failed (`OutOfStock`), not the transport outcome (`Conflict`). Promoted to the Key Rules in [AGENTS.md](/AGENTS.md), [CLAUDE.md](/CLAUDE.md), and [USAGE.md](/USAGE.md), and to the `src/services/` row in [Project Structure](/conventions/project-structure.md).
+
 ## 2026-09-01
 * **Creation**: Added [ReactJS Component Authoring](/conventions/react-components.md) — component files are limited to 700 total lines, own only their component function, import every other function from its own file, and decompose long JSX into independent components.
 
