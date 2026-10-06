@@ -4,12 +4,12 @@ title: Elegant Objects (Yegor Bugayenko)
 description: The 23 practical OOP recommendations from Yegor Bugayenko's "Elegant Objects" (Volume 1, 2017) — covering construction, encapsulation, immutability, method design, error handling, and class design.
 resource: https://www.yegor256.com/elegant-objects.html
 tags: [reference, book, oop, object-oriented, design, immutability, encapsulation, java]
-timestamp: 2026-07-11T00:00:00Z
+timestamp: 2026-10-05T00:00:00Z
 ---
 
 *Elegant Objects* (Volume 1, version 1.5, April 28, 2017) by Yegor Bugayenko is a book of 23 practical recommendations for object-oriented programmers. Most run against mainstream advice — it argues that static methods, NULL references, getters, setters, and mutable classes are harmful. The summary below captures the book's top-level recommendations; examples in the book are in Java.
 
-I treat these as **applied conventions**, except where an explicit project convention overrides the book. Agents writing code in my projects should follow the local adaptations identified below (wired into the Key Rules in [USAGE.md](/USAGE.md)). Several recommendations align with [my code conventions](/conventions/code-structure.md) — immutability, no static members, constructor injection, fakes over mocks, and avoiding NULL.
+I treat these as **applied conventions**, except where an explicit project convention overrides the book. Agents writing code in my projects should follow the local adaptations identified below (wired into the Key Rules in [USAGE.md](/USAGE.md)). The recommendations are spelled out as rules, with language-specific guidance and the permitted exceptions, in the [Object Design](/conventions/code-structure.md#object-design) section of Code Structure and in the [Size and Complexity Limits](/conventions/code-structure.md#size-and-complexity-limits) table. When this summary and those conventions differ, the conventions win.
 
 # The 23 Recommendations
 
@@ -58,8 +58,9 @@ I treat these as **applied conventions**, except where an explicit project conve
 
 # Related
 
-- [Code Structure and Patterns](/conventions/code-structure.md) — my conventions overlap with 2.6 (immutable), 2.8 (fakes not mocks), 3.2 (no static), 3.6 (constructor injection), and 4.1 (no NULL via Result types), and explicitly override 4.2 by requiring Result values for expected failures.
-- [Naming Conventions](/conventions/naming.md) — applies 1.1 (never action or role class names ending in -er/-or) and 2.4 (method naming).
+- [Code Structure and Patterns](/conventions/code-structure.md) — applies 1.2 and 1.3 (primary constructor, code-free constructors), 2.1, 2.9 and 3.1 (four fields, five-method interfaces, fewer than five public methods), 2.3 (every public method implements an interface), 2.5 (no public constants), 2.6 and 3.4 (immutable, never mutate arguments), 2.8 (fakes not mocks), 3.2 (no static), 3.3 and 4.1 (never accept or return NULL), 3.5 (no getters or setters), 3.6 (no `new` outside secondary constructors; no DI framework), 3.7 (no introspection or casting), 4.3 (final or abstract), and explicitly overrides 4.2 by requiring Result values for expected failures.
+- [Naming Conventions](/conventions/naming.md) — applies 1.1 (never action or role class names ending in -er/-or) and 2.4 (verbs for manipulators, nouns for builders, adjectives for booleans).
+- [Configuration Management](/conventions/configuration.md) — no default arguments complements 3.3 (no NULL arguments).
 
 # Citations
 

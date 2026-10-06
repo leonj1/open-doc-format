@@ -3,7 +3,7 @@ type: Convention
 title: Local Development Loop
 description: Docker Compose for multi-container projects, single Dockerfile otherwise, and a Makefile to keep commands uniform across all projects.
 tags: [deployment, local-dev, docker, makefile]
-timestamp: 2026-06-19T00:00:00Z
+timestamp: 2026-10-05T00:00:00Z
 ---
 
 # Container Strategy
@@ -21,8 +21,14 @@ Every project gets a `Makefile` so the development commands are the same no matt
 build:
 	docker build -t my-project .
 
-test:
-	docker run my-project npm test
+lint:
+	docker run my-project npm run lint
+
+test: lint
+	docker run my-project npm test -- --coverage
+
+migrate:
+	docker run --env-file .env my-project npm run migrate
 
 start:
 	docker-compose up -d
@@ -37,7 +43,9 @@ restart:
 | Command | What it does |
 |---------|-------------|
 | `make build` | Builds the Docker image |
-| `make test` | Runs the test suite inside a container |
+| `make lint` | Runs the formatter check, linter, and type check; fails on any finding (see [Code Hygiene](/conventions/code-hygiene.md)) |
+| `make test` | Runs `make lint`, then the test suite with coverage inside a container; fails below 80% |
+| `make migrate` | Applies pending database migrations from `migrations/` (only in projects with a database) |
 | `make start` | Starts the service(s) via Docker Compose |
 | `make stop` | Stops everything |
 | `make restart` | Restarts without rebuilding |

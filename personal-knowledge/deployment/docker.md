@@ -3,7 +3,7 @@ type: Convention
 title: Docker and Container Strategy
 description: Dockerfiles are the default build definition for projects on Railway, locally, and anywhere else that supports containers.
 tags: [deployment, docker, containers, local-dev]
-timestamp: 2026-07-11T00:00:00Z
+timestamp: 2026-10-05T00:00:00Z
 ---
 
 # Default: Dockerfile
@@ -18,7 +18,7 @@ The Dockerfile is the authoritative build recipe. A hosted platform must use it 
 |-------------|-----|
 | **Railway** | Platform builds from the Dockerfile and runs the container. |
 | **Local** | `docker build` and `docker run` — same image, same behavior as production. |
-| **Home lab** | Same Docker image, deployed to local Docker host or Proxmox. |
+| **Home lab** | Same Docker image, deployed to a bare-metal Docker host ([Intel](/homelab/hardware/intel.md) or [AMD](/homelab/hardware/amd.md)); no hypervisor or VMs. |
 
 # Exceptions
 

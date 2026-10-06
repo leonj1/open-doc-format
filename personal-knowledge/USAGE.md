@@ -3,7 +3,7 @@ type: Reference
 title: USAGE — How Agents Reference This OKF Bundle
 description: Reference paths for CLAUDE.md, AGENTS.md, and pi settings. Bundle is in a private GitHub repo — agents access it via gh CLI or local clone.
 tags: [reference, usage, agents, claude-code, droid, pi, codestructure]
-timestamp: 2026-06-23T02:38:59Z
+timestamp: 2026-10-05T00:00:00Z
 ---
 
 # Overview
@@ -105,6 +105,7 @@ After cloning to `~/src/open-doc-format/`:
     "~/src/open-doc-format/personal-knowledge/conventions/project-structure.md",
     "~/src/open-doc-format/personal-knowledge/conventions/naming.md",
     "~/src/open-doc-format/personal-knowledge/conventions/git-commits.md",
+    "~/src/open-doc-format/personal-knowledge/conventions/code-hygiene.md",
     "~/src/open-doc-format/personal-knowledge/references/elegant-objects.md"
   ]
 }
@@ -134,7 +135,7 @@ Create `.factory/skills/personal-conventions/SKILL.md`:
 ```yaml
 ---
 name: personal-conventions
-description: Jose's coding conventions — I/O interfaces, DI, class/function size limits, route discipline, commit format, and project structure. Apply when writing or reviewing code.
+description: Jose's coding conventions — I/O interfaces, manual DI, Elegant Objects rules (no null, no getters, class caps), size limits, route and middleware discipline, code hygiene defaults, commit format, and project structure. Apply when writing or reviewing code.
 ---
 
 # Jose's Coding Conventions
@@ -145,23 +146,30 @@ Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
 ## Key Rules
 
 - Every I/O class gets a stable project-owned interface + production impl + Fake impl stored under tests/; external contract changes stay in the production adapter, while Fakes test consumers without claiming to test the real boundary
-- Constructor-based dependency injection — no DI framework
+- Constructor-based dependency injection — no DI framework or container (no Spring/NestJS/Angular injector, Guice, tsyringe, inversify, wire, fx); one composition root is the only place that `new`s production classes
 - Implement logic exactly as specified — no default values, alternate sources, or fallback paths unless explicitly requested
-- All function arguments strongly typed — prefer typed objects over primitives
-- Functions return values — never mutate incoming arguments
+- All function arguments strongly typed — wrap every primitive argument in a typed object (`EmailAddress` not `string`, `Port` not `int`); long call sites mean introduce a record, not fall back to primitives
+- Functions return values — never mutate incoming arguments, including in Go (value receivers) and Python (frozen dataclasses)
+- Never accept or return `null`/`undefined`/`None`/`nil`; absence is a `Result` error, a tagged-union case, or a null object; no optional parameters
+- No getters or setters, no public fields, no mutators on classes outside `src/models/`; ask the object to act or render itself. `src/models/` holds immutable data records with read-only fields and no behavior
+- Every public method implements an interface — clients, services, and middleware all have one
+- Classes are final or abstract (never subclass a concrete class; no concrete struct embedding in Go); constructors only assign fields; no `new` outside the composition root, secondary constructors, and value objects; no public constants; no `instanceof`/`isinstance`/type switches/casts
 - Never default to lists/maps — pick the most constrained structure whose operations match the problem (priority queue, stack, queue, set, counter, ring buffer); enums/tagged unions over magic strings and boolean flags; wrap raw structures in domain classes; a plain list or map requires a stated justification (full guidance: conventions/data-structures.md)
 - No static classes or properties — everything is an instance
 - Result types over exceptions — never use exceptions for control flow
 - Quality tests prove exact results, state changes, boundary payloads, and prohibited side effects; a success flag alone is insufficient
-- Classes <700 lines, functions <30 lines, max 2 indentations
+- Classes <700 lines, functions <30 lines, max 2 indentations, ≤4 fields per class, <5 public methods per class, ≤5 methods per interface
 - Routes and endpoints never make I/O calls — delegate to services only; route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`
 - Services never return, embed, or accept HTTP status codes or request/response objects — they return domain-named errors (`OutOfStock`), and one response middleware maps `Result` → status code
+- All middleware (auth, validation, `Result` → HTTP, error → 500, logging) lives in `src/middleware/`, one class per file, with an interface and a Fake under `tests/` where it does I/O; routes contain no try/catch and no helpers
 - Commit messages: FEAT/BUG/CHORE prefix, feature branches, main/master default
-- Project layout: production source only in src/; tests, test-support code, and every Fake only in a separate top-level tests/ directory; never co-locate production and test code
+- Project layout: `src/services`, `src/clients`, `src/models`, `src/routes`, `src/middleware`, plus `migrations/` when there is a database; tests, test-support code, and every Fake only in a separate top-level tests/ directory; never co-locate production and test code
 - TypeScript for AI/LLM backends, Python for extensibility, Go for static binaries
 - Dockerfiles by default, docker-compose for multi-container
-- make build, make test, make start, make stop, make restart
-- Elegant Objects principles: no -er class names, immutable objects, no static/utility classes, no getters/setters, no NULL args or returns, always use interfaces, fakes over mocks (full list: references/elegant-objects.md)
+- make build, make lint, make test, make start, make stop, make restart (and make migrate when there is a DB)
+- Naming: manipulator methods are verbs (`save()`), builders are nouns (`total()`, `asPdf()`), booleans are adjectives (`empty()`); no `get`/`set` prefixes
+- Code hygiene defaults: one formatter + one linter + strict type check per language run by `make lint`; structured JSON logging to stdout through an injected `Log` interface, never log secrets; docstrings on interface methods only, no narration or commented-out code; timestamped forward-only migrations in `migrations/` applied by `make migrate`; `/v1/` path-prefix API versioning with at most two live versions; TanStack Query + Zustand + React Hook Form/Zod for frontend state, Tailwind + shadcn/ui + cva for styling (full guidance: conventions/code-hygiene.md)
+- Elegant Objects principles: no -er class names, immutable objects, no static/utility classes, no getters/setters, no NULL args or returns, always use interfaces, final or abstract classes, code-free constructors, no public constants, no casting, fakes over mocks; Result values override checked exceptions (rules: conventions/code-structure.md Object Design; full list: references/elegant-objects.md)
 
 ## Fetch Full Docs
 
@@ -186,6 +194,7 @@ These paths work with `gh api repos/leonj1/open-doc-format/contents/<path>`:
 | Data Structures | `personal-knowledge/conventions/data-structures.md` |
 | Project Structure | `personal-knowledge/conventions/project-structure.md` |
 | Naming | `personal-knowledge/conventions/naming.md` |
+| Code Hygiene | `personal-knowledge/conventions/code-hygiene.md` |
 | Languages | `personal-knowledge/conventions/languages.md` |
 | Configuration | `personal-knowledge/conventions/configuration.md` |
 | Git Commits | `personal-knowledge/conventions/git-commits.md` |

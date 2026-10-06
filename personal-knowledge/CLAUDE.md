@@ -32,8 +32,12 @@ mirror implementation details and produce false confidence; neither mocks nor
 Fakes guarantee correctness by themselves.
 
 ### Dependency Injection
-Constructor injection. No DI framework. Dependencies are explicit — passed
-through constructors, never imported or instantiated directly.
+Constructor injection. No DI framework or container (no Spring/NestJS/Angular
+injector, Guice, tsyringe, inversify, wire, fx). Dependencies are explicit —
+passed through constructors, never imported or instantiated directly. One
+composition root (`main` or the app bootstrap) is the only place that `new`s
+production classes; elsewhere `new` appears only in secondary constructors
+and for value objects/records.
 
 ### Literal Requirements and Fallbacks
 Implement the requested logic exactly as given. Do not add default values,
@@ -46,6 +50,10 @@ it is missing.
 - Classes: fewer than 700 lines
 - Functions: fewer than 30 lines
 - Indentation: max 2 levels (extract early if deeper)
+- Fields per class: four or fewer
+- Public methods per class: fewer than five
+- Methods per interface: five or fewer
+When a class cannot fit, extract a collaborator and inject it.
 
 ### Route Discipline
 Routes and endpoints in src/routes/ call services in src/services/ ONLY.
@@ -53,12 +61,22 @@ They never make I/O calls directly. Route classes use object names such as
 `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
 Services never return, embed, or accept HTTP status codes — they return
 domain-named errors (`OutOfStock`), and one response middleware maps those
-to status codes.
+to status codes. All middleware (auth, validation, Result → HTTP mapping,
+error → 500, logging) lives in src/middleware/, one class per file, each with
+an interface and a Fake under `tests/` where it does I/O. Routes contain no
+try/catch and no helpers.
 
 ### Type Discipline
 - All function arguments must be strongly typed — no `any`, no untyped params.
-- Prefer typed objects over primitives — `EmailAddress` not `string`, `CustomerId` not `number`.
+- Wrap every primitive argument in a typed object — `EmailAddress` not `string`,
+  `Port` not `int`, `CustomerId` not `number`. Validate once in the wrapper at
+  the edge. Long call sites mean "introduce a record", not "use a primitive".
 - Functions return values — never mutate incoming arguments. Return new state.
+  This holds in Go (value receivers, no mutating pointer receivers) and Python
+  (frozen dataclasses, `dataclasses.replace`, no in-place list/dict mutation).
+- Never accept or return `null`/`undefined`/`None`/`nil`. Absence is a named
+  `Result` error, a tagged union case, or a null object — never a nullable.
+  No optional parameters.
 
 ### Choosing Data Structures
 - Never default to a list/array or map/dict. First enumerate the operations the
@@ -83,6 +101,23 @@ to status codes.
 - Every dependency is an instance passed through a constructor. No static methods.
 - The only exception: a `main` entry point if the language requires it.
 
+### Object Design (Elegant Objects, applied)
+- No getters or setters, no public fields, no builder-style mutators on classes
+  outside `src/models/`. Ask the object to act (`order.taxed(rate)`) or to
+  render itself (`report.asPdf()`); never reach in. `src/models/` holds
+  immutable data records (types, frozen dataclasses, structs) with read-only
+  fields and no behavior — the rule governs the objects that act on them.
+- Every public method implements an interface: clients, services, and
+  middleware all have one. Fakes are required for anything that does I/O.
+- Classes are final or abstract, never extended concretely. No subclassing a
+  production class; no concrete struct embedding in Go. Compose and decorate.
+- Constructors only assign arguments to fields: no parsing, I/O, computation,
+  or `new`. One primary constructor; secondaries delegate to it.
+- No public constants or exported constant bags. Inject a value object instead.
+- No `instanceof`, `isinstance`, type switches, reflection, or downcasts.
+  Branch on a `Result`'s tag, or add a method to the interface.
+  Permitted only in the edge error middleware and in a decoding adapter.
+
 ### Error Handling: Result Types, Not Exceptions
 - Do not throw exceptions for expected outcomes (e.g., "user not found").
 - Return a Result type (`{ ok: true, value } | { ok: false, error }`) if the language supports it.
@@ -98,7 +133,9 @@ when those facts are part of the behavior or boundary contract. Do not assert
 private methods or incidental internal call structure.
 
 ```
-Request → Route → Service → Client (I/O interface) → External World
+Request → Middleware → Route → Service → Client (I/O interface) → External World
+            (auth, validate, parse)              Result flows back; response middleware
+                                                 maps Result → status, error middleware → 500
 ```
 
 ### Project Layout
@@ -107,8 +144,10 @@ project/
 ├── src/
 │   ├── services/      # Business logic
 │   ├── clients/       # External API clients, DB connectors
-│   ├── models/        # Types, schemas, entities
-│   └── routes/        # HTTP routes and endpoints (thin, delegates to services)
+│   ├── models/        # Immutable data records: types, schemas, entities
+│   ├── routes/        # HTTP routes and endpoints (thin, delegates to services)
+│   └── middleware/    # Auth, validation, Result→HTTP, error→500, logging
+├── migrations/        # Versioned, forward-only schema migrations (when there is a DB)
 └── tests/             # Tests and test-support code, including all Fakes
 ```
 Production source belongs only in `src/`; tests and test-support code belong only
@@ -117,8 +156,10 @@ beside its production implementation. Never co-locate test files and production
 source files, even when the language commonly does so.
 
 ### Naming
-Classes = nouns. Functions = verbs. Top-level classes short (Report),
-deeper classes longer (PdfReport). Follow language conventions otherwise.
+Classes = nouns, never -er/-or role names. Manipulator methods = verbs
+(`save()`), builder methods = nouns (`total()`, `asPdf()`), boolean queries =
+adjectives (`empty()`). No `get`/`set` prefixes. Top-level classes short
+(Report), deeper classes longer (PdfReport). Follow language conventions otherwise.
 
 ### Commits
 FEAT: for features. BUG: for bug fixes. CHORE: for trivial changes.
@@ -146,14 +187,39 @@ Rare direct commits to main for quick fixes.
 ### Docker and Dev Loop
 - Dockerfile by default for all projects
 - docker-compose for multi-container projects
-- Makefile in every project: make build, make test, make start, make stop, make restart
+- Makefile in every project: make build, make lint, make test, make start, make stop, make restart (plus make migrate when there is a DB)
 - Omit Dockerfile only when host filesystem access is required
+
+### Code Hygiene Defaults
+- Lint/format: Prettier + ESLint + strict tsc (TS); Ruff + mypy/pyright strict (Python);
+  gofmt + go vet + staticcheck (Go). `make lint` fails on any finding; `make test` depends on it.
+  No inline disable comments without a reason.
+- Logging: structured JSON to stdout via an injected `Log` interface (pino, structlog,
+  zerolog, SLF4J+Logback, tracing). One request log line in middleware; never log secrets
+  or PII; logging never replaces returning a `Result`.
+- Comments: docstring on every interface method stating the contract and its `Result`
+  errors; implementations stay silent unless explaining a non-obvious why. No narration,
+  no commented-out code, no bare TODOs, no file headers or AI-attribution comments.
+- Migrations: timestamped files in `migrations/`, forward-only, expand-then-contract,
+  applied by `make migrate`, never on app start. Alembic / golang-migrate / Drizzle or
+  Prisma / Flyway.
+- API versioning: `/v1/` path prefix from day one; additive changes stay, breaking changes
+  bump the whole prefix; at most two live versions; services never know the version.
+  Error payload: `{ "error": { "kind": "OutOfStock", "message": "..." } }`.
+- Frontend: TanStack Query for server data, URL for filters, React Hook Form + Zod for
+  forms, Zustand stores (with actions, no raw `set`) for shared UI state, no Redux by
+  default. Tailwind + shadcn/ui + cva; theme tokens only, no CSS-in-JS, no inline styles.
+- Full doc: ~/src/open-doc-format/personal-knowledge/conventions/code-hygiene.md
 
 ### Elegant Objects Principles
 Follow the OOP recommendations from Yegor Bugayenko's *Elegant Objects*:
 no -er class names, immutable objects, no static methods/utility classes,
-no getters/setters, no NULL args or returns, always use interfaces, and
-fakes over mocks. Full list: ~/src/open-doc-format/personal-knowledge/references/elegant-objects.md
+no getters/setters, no NULL args or returns, always use interfaces, final or
+abstract classes, code-free constructors, no public constants, no casting,
+four fields / five methods caps, and fakes over mocks. The one override: Result
+values instead of checked exceptions. Rules with exceptions spelled out:
+~/src/open-doc-format/personal-knowledge/conventions/code-structure.md (Object Design).
+Full list: ~/src/open-doc-format/personal-knowledge/references/elegant-objects.md
 
 ### Full Bundle
 Read more at ~/src/open-doc-format/personal-knowledge/index.md after cloning.

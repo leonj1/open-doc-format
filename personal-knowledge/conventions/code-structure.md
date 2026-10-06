@@ -1,9 +1,9 @@
 ---
 type: Convention
 title: Code Structure and Patterns
-description: How I structure code — I/O interfaces with Fakes under tests/, dependency injection, no implicit fallbacks, type discipline, immutability, Result types, functional BDD testing, size limits, and route/service/I/O separation with middleware-owned responses and helper-free route files.
-tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks, routes, middleware, rest]
-timestamp: 2026-07-11T00:00:00Z
+description: How I structure code — I/O interfaces with Fakes under tests/, manual constructor injection, no implicit fallbacks, type discipline, immutability, Result types, no null, no getters or setters, Elegant Objects class limits, functional BDD testing, size limits, and middleware/route/service/I/O separation with middleware-owned responses and helper-free route files.
+tags: [conventions, code-structure, patterns, dependency-injection, interfaces, testing, types, immutability, error-handling, result-type, bdd, functional-testing, no-fallbacks, routes, middleware, rest, elegant-objects, no-null, no-getters, object-design]
+timestamp: 2026-10-05T00:00:00Z
 ---
 
 # I/O Interface Pattern
@@ -18,8 +18,8 @@ Whenever a class performs any form of I/O — network, disk, database, HTTP — 
 ```typescript
 // Example pattern
 interface UserRepository {
-  findById(id: string): Promise<User>;
-  save(user: User): Promise<void>;
+  findById(id: UserId): Promise<Result<User, UserNotFound>>;
+  save(user: User): Promise<Result<void, UserSaveFailed>>;
 }
 
 class PostgresUserRepository implements UserRepository {
@@ -58,9 +58,17 @@ mockRepo.setup("findById").returns(fakeUser);
 
 // ALLOWED — hand-written Fake
 class FakeUserRepository implements UserRepository {
-  private users = new Map<string, User>();
-  findById(id: string) { return this.users.get(id) ?? null; }
-  save(user: User) { this.users.set(user.id, user); return user; }
+  private readonly users: Map<UserId, User>;
+  constructor(seed: ReadonlyMap<UserId, User>) { this.users = new Map(seed); }
+  async findById(id: UserId): Promise<Result<User, UserNotFound>> {
+    const user = this.users.get(id);
+    return user === undefined ? Err(new UserNotFound(id)) : Ok(user);
+  }
+  async save(user: User): Promise<Result<void, UserSaveFailed>> {
+    this.users.set(user.id(), user);
+    return Ok(undefined);
+  }
+  saved(): ReadonlyArray<User> { return [...this.users.values()]; }
 }
 ```
 
@@ -87,7 +95,19 @@ class OrderService {
 - **Production:** `new OrderService(new PostgresOrderRepo(...), new PostgresCustomerRepo(...))`
 - **Tests:** `new OrderService(new FakeOrderRepo(...), new FakeCustomerRepo(...))`
 
-No DI framework — manual constructor injection is sufficient and keeps the dependency graph explicit and grep-able.
+## No DI Framework
+
+Dependency injection is done by hand. Do not add a DI container, injector, or service locator — that rules out Spring's `@Autowired`, NestJS's `@Injectable()` graph, Angular's injector, Guice, Dagger, `tsyringe`, `inversify`, `dependency-injector`, `wire`, `fx`, and their equivalents. Manual constructor injection is sufficient and keeps the dependency graph explicit and grep-able.
+
+Every project has exactly one place where production objects are wired together: the composition root (`main`, the application bootstrap, or a single `src/app.ts`-style file). That file is the only place that calls `new` on production classes outside of secondary constructors. Everything else receives its collaborators as constructor arguments.
+
+| Good | Bad |
+|------|-----|
+| `new OrderService(new PostgresOrderRepo(pool))` in `main` | `@Injectable() class OrderService` resolved by a container |
+| Tests build the graph by hand with Fakes | `container.resolve(OrderService)` in a test |
+| A 40-line composition root that reads top to bottom | Decorators and module metadata scattered across files |
+
+Framework-mandated decorators on route classes (for example, a router's `@Get()` annotation) are acceptable because they describe HTTP wiring, not dependency resolution. The dependencies of that route class are still passed through its constructor by the composition root.
 
 # Literal Requirements and Fallbacks
 
@@ -104,10 +124,15 @@ When a required input is absent, fail clearly through the project's normal error
 | **Class size** | Fewer than 700 lines | A file over 700 lines has too many responsibilities. Extract a collaborator. |
 | **Function size** | Fewer than 30 lines | A function over 30 lines does too much. It's doing multiple things or handling too many edge cases inline. |
 | **Cyclomatic complexity** | No more than 2 indentations | Deep nesting is the primary readability killer. If you're three indents deep, extract a function or use early returns. |
+| **Fields per class** | Four or fewer | More encapsulated state means the class has more than one reason to change. Split it, or compose smaller objects. (Elegant Objects 2.1) |
+| **Public methods per class** | Fewer than five | A small public surface keeps a class focused and keeps its Fake small. Convenience methods go in a "smart" decorator, not the core class. (Elegant Objects 3.1) |
+| **Methods per interface** | Five or fewer | A short interface is easy to implement, easy to Fake, and hard to misuse. Split a wide interface by the role each consumer needs. (Elegant Objects 2.9) |
+
+The field and method caps are per class, not per file. A class that cannot fit within them is doing several jobs; extract a collaborator and inject it through the constructor. Do not evade the caps by packing several values into a single bag field or by exposing one method that takes a mode flag.
 
 # Route Discipline
 
-Routes and endpoints in `src/routes/` have **one job**: call services in `src/services/`. They never perform I/O directly. Route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
+Routes and endpoints in `src/routes/` have **one job**: call services in `src/services/`. They never perform I/O directly. Everything HTTP-shaped around the route lives in `src/middleware/`. Route classes use object names such as `HttpRoute` or `OrderEndpoint`, never `Handler` or `Controller`.
 
 ```
 Request → Middleware → Route → Service → Client (I/O interface) → External World
@@ -212,7 +237,7 @@ Anything that applies to more than one route belongs in middleware, never in the
 | Logging, tracing, request IDs | logging middleware | `logger.info(...)` calls |
 | Rate limiting, CORS, compression | dedicated middleware | anything |
 
-Middleware is still code and follows every other rule here: it is a class with constructor-injected dependencies, it has an interface and a Fake where it does I/O, and it is tested through its public contract.
+Middleware lives in `src/middleware/`, one class per file (see [Project Structure](/conventions/project-structure.md)). It is still code and follows every other rule here: it is a class with constructor-injected dependencies, it implements an interface, it has a Fake under `tests/` where it does I/O, and it is tested through its public contract.
 
 ## Route Files Contain Only Routes
 
@@ -275,7 +300,7 @@ Service
   │ orchestrates business logic
   │ calls clients through their interfaces
   ▼
-Client (ProductionIoCient or FakeIoCient)
+Client (ProductionIoClient or FakeIoClient)
   │ performs actual or fake I/O
   ▼
 Returns through the chain back to the route as a Result
@@ -309,6 +334,17 @@ Avoid bare strings, numbers, or booleans as arguments. Wrap them in typed object
 
 A `string` doesn't tell you what it is. An `EmailAddress` does. Use branded types, newtypes, or value objects to wrap primitives.
 
+This is a rule, not a preference. Every argument of a public method on a service, client, or route is a typed object, never a bare `string`, `number`, `int`, `bool`, or `float`. The wrapper is where the validation lives: an `EmailAddress` is constructed once at the edge (middleware or the composition root), it rejects malformed input there, and every function downstream can trust it without re-checking. Call sites get longer, and that is accepted: combined with [no default arguments](/conventions/configuration.md#function-arguments-never-have-defaults) and the 30-line function limit, long call sites are a signal to introduce a record type that groups the values that travel together, not a reason to fall back to primitives.
+
+| Primitive | Wrap as |
+|-----------|---------|
+| `string` holding an identifier | `CustomerId`, `OrderId`, `Sku` |
+| `string` holding an address or URL | `EmailAddress`, `HttpUrl`, `FilePath` |
+| `number` or `int` with a unit | `Port`, `UsdAmount`, `Milliseconds`, `ByteCount` |
+| `boolean` as a mode switch | A tagged union or enum naming each mode (see [Choosing Data Structures](/conventions/data-structures.md)) |
+
+The exceptions are the inside of the wrapper itself, the single mapping layer that converts to and from a wire or storage format, and loop indices or arithmetic that never cross a function boundary.
+
 ## Functions Return Values — Never Mutate Arguments
 
 Functions must return a strongly typed object. Never mutate the incoming argument:
@@ -327,6 +363,16 @@ function addItem(order: Order, item: OrderItem): void {
 
 Immutability means: callers always receive the result as a return value. No side effects on parameters. Functions that appear to "update" something should return the new state.
 
+This applies in every language, including the ones whose idioms push the other way:
+
+| Language | Do | Don't |
+|----------|----|-------|
+| TypeScript | `readonly` fields, spread into a new object, `ReadonlyArray<T>` | `order.items.push(item)`, reassigning a parameter's fields |
+| Python | `@dataclass(frozen=True)`, `dataclasses.replace(...)`, return a new tuple | `order.items.append(item)`, `list.sort()` on an argument, mutating a passed dict |
+| Go | Value receivers that return a new value, `func (o Order) WithItem(i Item) Order` | Pointer receivers that mutate, `func AddItem(o *Order, i Item)` |
+
+The one place a pointer receiver or in-place mutation is acceptable in Go is the internals of a production I/O client that must satisfy a standard-library interface (`io.Writer`, `sql.Scanner`, `http.Handler`) that is defined with a pointer or mutating contract. Even then, the mutation does not escape that type's own fields.
+
 # No Static Classes or Properties
 
 Static members couple callers to a global, making testing and refactoring hard. Every dependency must be an instance passed through a constructor:
@@ -338,6 +384,118 @@ Static members couple callers to a global, making testing and refactoring hard. 
 | Instance property on an injected dependency | `Config.STATIC_FIELD` |
 
 If the language absolutely requires a static entry point (e.g., a `main` function), that's the only exception. Everything else is an instance.
+
+# Object Design
+
+These rules come from [Elegant Objects](/references/elegant-objects.md) and apply to every class in `src/`. Where a rule conflicts with a framework idiom, the rule wins; pick a thinner framework or confine the idiom to the single production adapter that talks to it.
+
+## Never Accept or Return Null
+
+No function accepts `null`, `undefined`, `None`, or `nil` as an argument, and no function returns one (Elegant Objects 3.3 and 4.1). A null is a hidden, undocumented mode of operation that every caller has to remember to check.
+
+| Situation | Instead of null |
+|-----------|-----------------|
+| Lookup that may find nothing | `Result<User, UserNotFound>` |
+| Optional input | A tagged union with an explicit absent case, or a separate method without that parameter |
+| "No value yet" | A null object (`NoCustomer`, `EmptyCart`) that implements the same interface |
+| Empty list of things | An empty collection, never null |
+
+```typescript
+// Bad — null leaks across a boundary
+findById(id: CustomerId): Customer | null
+
+// Good — the absence is a named outcome
+findById(id: CustomerId): Result<Customer, CustomerNotFound>
+```
+
+Language specifics:
+
+- **TypeScript:** `strictNullChecks` is on. `null` and `undefined` never appear in a public signature in `src/`. Optional parameters (`?`) are prohibited, which also follows from [no default arguments](/conventions/configuration.md#function-arguments-never-have-defaults).
+- **Python:** `Optional[T]` and `T | None` never appear in a public signature in `src/`. Return a `Result` or a null object.
+- **Go:** Never return a nil pointer or nil interface as a "not found" signal; return `(T, error)` with a domain error. Nil slices and maps are initialised before they are returned.
+
+The one exception is the single production adapter that talks to a library which itself returns null; it translates the null into a `Result` or null object before anything else sees it.
+
+## No Getters or Setters
+
+Objects expose behavior, not their internals (Elegant Objects 3.5). A class in `src/services/`, `src/clients/`, `src/routes/`, or `src/middleware/` has no `getX()`/`setX()` pairs, no public fields, no `@property` that merely returns a field, and no builder-style mutators.
+
+| Bad | Good |
+|-----|------|
+| `order.getTotal()` then compute tax in the caller | `order.taxed(rate)` returns a new `Order` |
+| `user.setEmail(e)` | `user.withEmail(e)` returns a new `User` |
+| `report.getData()` then format it elsewhere | `report.asPdf()` / `report.asMarkdown()` |
+
+Ask the object to do the work, or ask it to render itself into the shape the caller needs (a DTO, a wire payload, a database row). The object decides what to reveal; the caller does not reach in.
+
+**Boundary with `src/models/`.** The [`src/models/`](/conventions/project-structure.md) directory holds immutable data records: TypeScript `type`/`interface` declarations, frozen Python dataclasses, Go structs, and the schema types that ORMs, validators, and serializers require. Those records are *data*, not objects: they have public, read-only fields and no behavior beyond construction and equality. The no-getters rule governs *objects*, the classes outside `src/models/` that encapsulate a record and act on it. An object may accept a record in its constructor and may return one from a rendering method such as `asRow()` or `asDto()`; it never exposes a getter for the record it holds. ORM entity classes with generated accessors live only inside the production adapter in `src/clients/` and never cross its interface.
+
+## Final or Abstract, Never Both
+
+Every class is either `final` (cannot be extended) or `abstract` (cannot be instantiated). Nothing in between (Elegant Objects 4.3). Behavior is shared by composition and decoration, not by overriding a concrete parent.
+
+- **TypeScript / Python:** Treat every class as final by convention. Do not `extends` or subclass a concrete class in `src/`. A Fake implements the interface; it does not subclass the production class.
+- **Go:** Struct embedding of a concrete type to inherit methods is prohibited for the same reason. Embed interfaces or compose explicitly.
+- **Java / Kotlin:** Mark classes `final` and abstract classes `abstract`.
+
+## Constructors Contain No Logic
+
+A constructor only assigns its arguments to fields (Elegant Objects 1.3). No parsing, no validation beyond rejecting an obviously impossible argument, no I/O, no computation, no `new`. Work happens lazily in methods, when the object is used. A constructor that needs to compute something should take the computed value as an argument instead and let a secondary constructor or the composition root supply it.
+
+```typescript
+// Bad — constructor does work
+constructor(url: string) { this.parsed = new URL(url); this.client = new HttpClient(this.parsed); }
+
+// Good — constructor stores; collaborators are injected
+constructor(private readonly endpoint: HttpUrl, private readonly http: HttpClient) {}
+```
+
+When a class has several constructors, exactly one is primary and assigns every field; the others delegate to it (Elegant Objects 1.2). In languages without constructor overloading (TypeScript, Python, Go), use named factory functions that return a new instance and do nothing else.
+
+## No `new` Outside Secondary Constructors
+
+Production classes do not instantiate their own collaborators (Elegant Objects 3.6). The `new` keyword, Python class calls that construct a collaborator, and Go `&Foo{}` of a dependency appear in exactly three places:
+
+1. the composition root that wires the application;
+2. a secondary constructor or named factory that supplies a default collaborator to the primary constructor; and
+3. value objects, records, and `Result` wrappers, which are data and may be created anywhere.
+
+If a method needs a fresh collaborator per call, inject a factory object through the constructor and ask it for one.
+
+## No Public Constants
+
+No `public static final`, exported `const` bags, or module-level constant tables that are shared across classes (Elegant Objects 2.5). A shared constant is a hidden coupling: every user depends on its value and its meaning, and neither is encapsulated.
+
+| Bad | Good |
+|-----|------|
+| `export const DEFAULT_TIMEOUT_MS = 30000` imported in five files | A `Timeout` value object constructed once in the composition root and injected |
+| `Headers.CONTENT_TYPE_JSON` | A `JsonBody` object that knows how to write its own headers |
+| `MAX_RETRIES = 3` consulted in a loop | A `RetryPolicy` object that owns the loop |
+
+Private constants inside a single class are fine; a route's own path string is fine. Configuration values arrive through the constructor from the configuration layer described in [Configuration Management](/conventions/configuration.md), never from a constants module.
+
+## No Type Introspection or Casting
+
+No `instanceof`, `isinstance`, type switches, reflection, or downcasts in `src/` (Elegant Objects 3.7). If code needs to know the concrete type behind an interface, the interface is missing a method; add the method and let polymorphism do the branching.
+
+The caller of a `Result` inspects the explicit `ok`/`kind` tag, not the error's class. Tagged unions are discriminated on their tag field, never on the runtime type of a payload.
+
+The two permitted exceptions are the single error middleware at the application edge, which may inspect a thrown value to log it before returning a 500, and the production adapter that decodes an untyped wire or storage payload into a typed record, where a narrowing check is the decoding.
+
+## Every Public Method Implements an Interface
+
+Every class whose public methods are called by another class in `src/` implements an interface declaring those methods (Elegant Objects 2.3). This extends the [I/O Interface Pattern](#io-interface-pattern) from clients to services and middleware:
+
+| Class | Interface required | Fake required |
+|-------|--------------------|---------------|
+| Client (performs I/O) | Yes | Yes, under `tests/` |
+| Middleware that performs I/O (auth lookup, rate-limit store) | Yes | Yes, under `tests/` |
+| Middleware with no I/O (response mapping, parsing) | Yes | No, tested directly |
+| Service | Yes | Optional; write a Fake only when a consumer test genuinely needs one |
+| Route | Yes, when the framework allows it | No |
+| Value object or record | No | No |
+
+Services are injected into routes by interface so a route test can be wired with a Fake service if needed and so the dependency graph reads as contracts, not concrete classes.
 
 # Error Handling: Result Types, Not Exceptions
 
@@ -533,7 +691,7 @@ pytest --cov=src --cov-report=term --cov-fail-under=80
 go test -cover ./...
 ```
 
-Coverage gates are enforced in CI where CI exists, and checked manually before merging where it doesn't. A PR that drops coverage below 80% must either add tests or explicitly justify why the uncovered code cannot be meaningfully tested.
+There is [no CI pipeline](/deployment/ci-cd.md), so the coverage gate runs locally: `make test` runs the suite with coverage and fails below 80%, and it is run before every push. A PR that drops coverage below 80% must either add tests or explicitly justify why the uncovered code cannot be meaningfully tested.
 
 Fakes make consumer behavior testable without real external dependencies, but they do not cover production adapters. System calls, hardware interfaces, platform-specific paths, and third-party protocols require focused integration or contract tests in an appropriate environment. If such a test cannot run in the normal suite, document where and how it runs rather than claiming Fake coverage as a substitute.
 
@@ -542,3 +700,5 @@ Fakes make consumer behavior testable without real external dependencies, but th
 - [Project Structure](/conventions/project-structure.md) — where things live on disk
 - [Configuration Management](/conventions/configuration.md) — how IO clients get their connection strings
 - [Dependencies and Libraries](/conventions/dependencies.md) — no DI framework, manual injection
+- [Code Hygiene](/conventions/code-hygiene.md) — linting, formatting, logging, comments, migrations, API versioning, frontend state and styling
+- [Elegant Objects](/references/elegant-objects.md) — source of the Object Design rules above
