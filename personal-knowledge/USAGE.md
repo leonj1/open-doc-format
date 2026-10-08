@@ -152,7 +152,7 @@ features, native platform capabilities, and installed dependencies before
 writing the smallest necessary change. Avoid scaffolding for hypothetical needs.
 Preserve explicit requirements, validation, security, accessibility, and data-loss
 protection; the implementation rules below still apply, including required tests.
-Full guidance: conventions/before-coding.md.
+Full guidance: ~/src/open-doc-format/personal-knowledge/conventions/before-coding.md.
 
 ## Key Rules
 
