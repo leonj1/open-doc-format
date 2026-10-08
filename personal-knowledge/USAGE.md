@@ -3,7 +3,7 @@ type: Reference
 title: USAGE — How Agents Reference This OKF Bundle
 description: Reference paths for CLAUDE.md, AGENTS.md, and pi settings. Bundle is in a private GitHub repo — agents access it via gh CLI or local clone.
 tags: [reference, usage, agents, claude-code, droid, pi, codestructure]
-timestamp: 2026-10-05T00:00:00Z
+timestamp: 2026-10-08T00:00:00Z
 ---
 
 # Overview
@@ -100,6 +100,7 @@ After cloning to `~/src/open-doc-format/`:
 ```json
 {
   "contextFiles": [
+    "~/src/open-doc-format/personal-knowledge/conventions/before-coding.md",
     "~/src/open-doc-format/personal-knowledge/conventions/code-structure.md",
     "~/src/open-doc-format/personal-knowledge/conventions/data-structures.md",
     "~/src/open-doc-format/personal-knowledge/conventions/project-structure.md",
@@ -135,13 +136,23 @@ Create `.factory/skills/personal-conventions/SKILL.md`:
 ```yaml
 ---
 name: personal-conventions
-description: Jose's coding conventions — I/O interfaces, manual DI, Elegant Objects rules (no null, no getters, class caps), size limits, route and middleware discipline, code hygiene defaults, commit format, and project structure. Apply when writing or reviewing code.
+description: Jose's coding conventions — deciding whether and what to code, I/O interfaces, manual DI, Elegant Objects rules (no null, no getters, class caps), size limits, route and middleware discipline, code hygiene defaults, commit format, and project structure. Apply when exploring, designing, writing, or reviewing code.
 ---
 
 # Jose's Coding Conventions
 
 Full bundle: https://github.com/leonj1/open-doc-format/tree/master/personal-knowledge
 Clone: gh repo clone leonj1/open-doc-format ~/src/open-doc-format
+
+## Before Coding
+
+Read the affected code and trace its callers before choosing a solution.
+Omit speculative work. Search for reusable code, then prefer standard-library
+features, native platform capabilities, and installed dependencies before
+writing the smallest necessary change. Avoid scaffolding for hypothetical needs.
+Preserve explicit requirements, validation, security, accessibility, and data-loss
+protection; the implementation rules below still apply, including required tests.
+Full guidance: conventions/before-coding.md.
 
 ## Key Rules
 
@@ -190,6 +201,7 @@ These paths work with `gh api repos/leonj1/open-doc-format/contents/<path>`:
 | USAGE (this file) | `personal-knowledge/USAGE.md` |
 | AGENTS | `personal-knowledge/AGENTS.md` |
 | CLAUDE | `personal-knowledge/CLAUDE.md` |
+| Before Coding | `personal-knowledge/conventions/before-coding.md` |
 | Code Structure | `personal-knowledge/conventions/code-structure.md` |
 | Data Structures | `personal-knowledge/conventions/data-structures.md` |
 | Project Structure | `personal-knowledge/conventions/project-structure.md` |

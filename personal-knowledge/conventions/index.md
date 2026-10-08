@@ -1,5 +1,6 @@
 # Concepts
 
+* [Before Coding](before-coding.md) — Decide whether new code is needed, reuse existing solutions, and choose the smallest sufficient change before implementation.
 * [Choosing Data Structures](data-structures.md) — Pick the most constrained structure whose operations match the problem; lists and maps are permissive last resorts that allow invalid states to be saved.
 * [Code Hygiene](code-hygiene.md) — Default conventions for linting and formatting, logging in every language, comments and docstrings, database migrations, API versioning, and frontend state management and styling.
 * [Code Structure and Patterns](code-structure.md) — Stable I/O interfaces isolate external contract changes; Fakes under tests/ exercise consumers without replacing real-boundary tests; Elegant Objects rules (no null, no getters, class caps, final or abstract, no DI framework); quality tests prove behavior, contracts, errors, and side effects.

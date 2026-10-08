@@ -17,6 +17,7 @@ Personal software development practices, home lab infrastructure, network topolo
 
 ## Development Conventions
 
+* [Before Coding](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/before-coding.md) — Decide whether new code is needed, reuse existing solutions, and choose the smallest sufficient change before implementation.
 * [Language Preferences](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/languages.md) — TypeScript, Python, Go, Java, Rust
 * [Project Structure](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/project-structure.md) — services, clients, models, routes, and middleware under src/; tests, test-support code, and all Fake classes in tests/
 * [ReactJS Component Authoring](https://github.com/leonj1/open-doc-format/blob/master/personal-knowledge/conventions/react-components.md) — Components stay within 700 total lines, import functions from their own files, and decompose long JSX into independent components
