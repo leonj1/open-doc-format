@@ -13,6 +13,16 @@ To fetch a single file without cloning:
 
 ---
 
+## Before Coding
+
+Read the affected code and trace its callers before choosing a solution.
+Omit speculative work. Search for reusable code, then prefer standard-library
+features, native platform capabilities, and installed dependencies before
+writing the smallest necessary change. Avoid scaffolding for hypothetical needs.
+Preserve explicit requirements, validation, security, accessibility, and data-loss
+protection; the implementation rules below still apply, including required tests.
+Full guidance: [Before Coding](conventions/before-coding.md).
+
 ## Key Rules (applied to all code in this project)
 
 ### I/O Interface Pattern

@@ -1,5 +1,9 @@
 # Personal Knowledge — Update Log
 
+## 2026-10-08
+* **Creation**: Added [Before Coding](/conventions/before-coding.md), adapted from Ponytail's decision ladder: establish the need, search for reusable code, prefer built-in capabilities and installed dependencies, then implement the minimum necessary. Existing implementation and safety requirements still apply.
+* **Update**: Added the guidance before the implementation rules in [AGENTS.md](/AGENTS.md), [CLAUDE.md](/CLAUDE.md), and the Droid snippet in [USAGE.md](/USAGE.md); included it in both indexes, Pi contextFiles, and the GitHub API path table.
+
 ## 2026-10-05
 * **Update**: [Code Structure and Patterns](/conventions/code-structure.md) gained an **Object Design** section that turns the applied [Elegant Objects](/references/elegant-objects.md) recommendations into explicit rules with language-specific guidance and named exceptions: never accept or return null (`null`/`None`/`nil`), no getters or setters (with a clarified boundary for the data records in `src/models/`), classes are final or abstract, constructors contain no logic, no `new` outside secondary constructors or the composition root, no public constants, no type introspection or casting, and every public method implements an interface. The size table now caps classes at four fields and fewer than five public methods, and interfaces at five methods. Wrapping every primitive argument in a typed object and never mutating an argument were promoted from preferences to rules, with Go and Python guidance. The **No DI Framework** rule now names the excluded containers and defines the composition root.
 * **Update**: Added `src/middleware/` as the fifth standard directory in [Project Structure](/conventions/project-structure.md); middleware classes, their interfaces, and the single `Result` → HTTP mapping live there. The layout and request-flow diagram in [AGENTS.md](/AGENTS.md) and [CLAUDE.md](/CLAUDE.md) now show the middleware layer.
